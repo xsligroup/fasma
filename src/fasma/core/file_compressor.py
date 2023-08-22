@@ -1,6 +1,6 @@
 from fasma.gaussian import parse_gaussian as pg
 from fasma.core import file_reader as fr
-from fasma.core import boxes as bx
+from fasma.core.dataclasses import boxes as bx
 import numpy as np
 import pandas as pd
 import pickle

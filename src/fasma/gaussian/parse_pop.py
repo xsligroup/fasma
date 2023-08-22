@@ -1,4 +1,4 @@
-from fasma.core import boxes as bx
+from fasma.core.dataclasses.data import pop, electron
 from fasma.core import messages as msg
 from fasma.gaussian import parse_functions
 from fasma.gaussian import parse_matrices
@@ -22,7 +22,7 @@ def check_pop(basic, file_keyword_trie, file_lines, cas_status: bool) -> bool:
             overlap_matrix = get_overlap_matrix(basic, file_keyword_trie, file_lines)
             electron_data = get_alpha_electron_data(basic, file_keyword_trie, file_lines, cas_status)
             calculate_ao_projection(overlap_matrix, electron_data)
-            pop_data = bx.PopData(ao_matrix=ao_matrix, overlap_matrix=overlap_matrix, electron_data=electron_data)
+            pop_data = pop.PopData(ao_matrix=ao_matrix, overlap_matrix=overlap_matrix, electron_data=electron_data)
             if (basic.scf_type == "ROHF" and cas_status) or basic.scf_type == "UHF":
                 beta_electron_data = get_beta_electron_data(basic, file_keyword_trie, file_lines, cas_status)
                 calculate_ao_projection(overlap_matrix, beta_electron_data)
@@ -40,12 +40,12 @@ def get_alpha_electron_data(basic, file_keyword_trie, file_lines, cas_status):
     density_matrix = get_density_matrix(basic=basic, file_keyword_trie=file_keyword_trie, file_lines=file_lines, cas_status=cas_status)
     mo_coefficient_matrix = get_mo_coefficient_matrix(basic=basic, file_keyword_trie=file_keyword_trie, file_lines=file_lines)
     eigenvalues = get_eigenvalues(file_keyword_trie=file_keyword_trie, file_lines=file_lines, n_mo=basic.n_mo)
-    return bx.ElectronData(density_matrix, mo_coefficient_matrix, eigenvalues)
+    return electron.ElectronData(density_matrix, mo_coefficient_matrix, eigenvalues)
 
 
 def get_beta_electron_data(basic, file_keyword_trie, file_lines, cas_status):
     density_matrix = get_density_matrix(basic=basic, file_keyword_trie=file_keyword_trie, file_lines=file_lines, cas_status=cas_status, beta=True)
-    beta_electron_data = bx.BetaData(density_matrix=density_matrix)
+    beta_electron_data = electron.BetaData(density_matrix=density_matrix)
     if basic.scf_type == "UHF":
         mo_coefficient_matrix = get_mo_coefficient_matrix(basic=basic, file_keyword_trie=file_keyword_trie, file_lines=file_lines, beta=True)
         eigenvalues = get_eigenvalues(file_keyword_trie=file_keyword_trie, file_lines=file_lines, n_mo=basic.n_mo, beta=True)
@@ -115,6 +115,7 @@ def get_ao_matrix(basic, file_keyword_trie, file_lines):
         ao_matrix[counter, :] = ao_row
         counter += 1
     return ao_matrix
+
 
 def get_overlap_matrix(basic, file_keyword_trie, file_lines) -> np.array:
     """

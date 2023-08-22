@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fasma"
-version = "0.0.1"
+version = "0.0.2"
 description = "Analyzer for computational chemistry outputs"
 readme = "README.md"
 authors = [{ name = "Kevin Hoang", email = "khoang89@uw.edu" }]
@@ -25,7 +25,8 @@ dependencies = [
     "numpy>=1.23.0",
     "matplotlib>=3.5.2",
     "scipy>=1.9.1",
-    "pandas>=1.4.3"
+    "pandas>=1.4.3",
+    "hdfpy>=3.9.0"
 ]
 requires-python = ">=3.9"
 

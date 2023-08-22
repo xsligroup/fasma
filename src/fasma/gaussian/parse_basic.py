@@ -1,4 +1,4 @@
-from fasma.core import boxes as bx
+from fasma.core.dataclasses.data import basic
 from fasma.gaussian import parse_functions
 
 
@@ -27,7 +27,7 @@ def get_basic(file_keyword_trie, file_lines):
         homo = homo // 2
     lumo = homo + 1
 
-    basic_data = bx.BasicData(atom_list=atom_list, scf_type=scf_type, n_basis=n_basis,
+    basic_data = basic.BasicData(atom_list=atom_list, scf_type=scf_type, n_basis=n_basis,
                               n_primitive_gaussian=n_primitive_gaussian, n_alpha_electron=n_alpha_electron,
                               n_beta_electron=n_beta_electron, n_electron=n_electron, n_mo=n_mo, homo=homo, lumo=lumo)
     return basic_data

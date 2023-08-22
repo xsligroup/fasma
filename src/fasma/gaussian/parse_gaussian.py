@@ -1,4 +1,4 @@
-from fasma.core import boxes as bx
+from fasma.core.dataclasses import boxes as bx
 from fasma.gaussian import parse_basic
 from fasma.gaussian import parse_td
 from fasma.gaussian import parse_cas

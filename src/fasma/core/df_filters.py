@@ -4,6 +4,8 @@ import pandas as pd
 def filter_mo_analysis(dataframe: pd.DataFrame, index: list = [], mo_list: list = []):
     columns = [i for i in list(dataframe) if 'sum' in i or 'MO' in i]
     if index:
+        if "Info" in dataframe.index.names:
+            index = ["Info"] + index
         dataframe = dataframe.groupby(index, sort=False)[columns].sum()
     if mo_list:
         kept_mo = ['MO ' + str(number) for number in mo_list]
@@ -21,7 +23,7 @@ def filter_transition_rows(dataframe: pd.DataFrame, index: list = [], attributes
     return dataframe
 
 
-def filter_transition_columns(dataframe, custom_mo_dict, basic_data):
+def filter_transition_columns(dataframe, custom_mo_dict, box):
     new_df = dataframe.copy()
     mo_dict = {}
     if isinstance(custom_mo_dict, list):
@@ -32,10 +34,10 @@ def filter_transition_columns(dataframe, custom_mo_dict, basic_data):
         for label, mo in custom_mo_dict.items():
             mo_list += mo
             custom_mo_dict[label] = ['AS MO ' + str(number) for number in mo]
-    core_column = ['AS MO ' + str(mo) for mo in range(1, basic_data.homo + 1) if mo not in mo_list]
+    core_column = ['AS MO ' + str(mo) for mo in range(1, box.basic_data.homo + 1) if mo not in mo_list]
     mo_dict["core"] = core_column
     mo_dict.update(custom_mo_dict)
-    valence_column = ['AS MO ' + str(mo) for mo in range(basic_data.homo + 1, basic_data.n_mo + 1) if mo not in mo_list]
+    valence_column = ['AS MO ' + str(mo) for mo in range(box.basic_data.homo + 1, box.basic_data.n_mo + 1) if mo not in mo_list]
     mo_dict["valence"] = valence_column
     for label, column_list in mo_dict.items():
         combine_mo_columns(new_df, label, column_list)

@@ -1,5 +1,5 @@
 from matplotlib.collections import PolyCollection
-from fasma.core import spectrum as sp
+from fasma.core.dataclasses import spectrum as sp
 from multiprocessing import Pool
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt

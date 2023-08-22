@@ -1,4 +1,4 @@
-from fasma.core import spectrum as sp
+from fasma.core.dataclasses import spectrum as sp
 import pandas as pd
 import numpy as np
 import warnings

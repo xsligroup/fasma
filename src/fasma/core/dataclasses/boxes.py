@@ -1,190 +1,49 @@
-from fasma.gaussian import parse_matrices
+from fasma.core.dataclasses.data import basic, spectra, pop
 from fasma.core import df_generators as dfg
-from dataclasses import dataclass, field
+from fasma.gaussian import parse_matrices
+from dataclasses import dataclass
 from typing import Optional
-from abc import ABC
 import pandas as pd
 import numpy as np
 
 
-@dataclass(frozen=True)
-class BasicData:
-    atom_list: list
-    scf_type: str
-    n_basis: int
-    n_primitive_gaussian: int
-    n_alpha_electron: int
-    n_beta_electron: int
-    n_electron: int
-    n_mo: int
-    homo: int
-    lumo: int
-
-
-class SpectraData(ABC):
-    "Spectra Data"
-
-
-@dataclass
-class ElectronData:
-    density_matrix: np.ndarray
-    mo_coefficient_matrix: np.ndarray
-    eigenvalues: np.ndarray
-    ao_projection_matrix: Optional[np.ndarray] = None
-
-    def add_ao_projection_matrix(self, data: np.ndarray):
-        if self.ao_projection_matrix is None:
-            self.ao_projection_matrix = data
-
-
-@dataclass
-class BetaData(ElectronData):
-    mo_coefficient_matrix: Optional[np.ndarray] = None
-    eigenvalues: Optional[np.ndarray] = None
-
-    def add_beta_mo_coefficient_matrix(self, data: np.ndarray):
-        if self.mo_coefficient_matrix is None:
-            self.mo_coefficient_matrix = data
-
-    def add_beta_eigenvalues(self, data: np.ndarray):
-        if self.eigenvalues is None:
-            self.eigenvalues = data
-
-
-@dataclass
-class PopData:
-    ao_matrix: np.ndarray
-    overlap_matrix: np.ndarray
-    electron_data: ElectronData
-    beta_electron_data: Optional[BetaData] = None
-
-    def add_beta_electron_data(self, data: BetaData):
-        if self.beta_electron_data is None:
-            self.beta_electron_data = data
-
-
-class MethodologyData(ABC):
-    "Methodology Data"
-
-
-@dataclass
-class CASCentricData(MethodologyData):
-    n_root: int
-    n_slater_determinant: int
-    n_excitation_full: int
-    switched_orbitals: Optional[np.ndarray] = None
-
-    def add_switched_orbitals(self, data: np.ndarray):
-        if self.switched_orbitals is None:
-            self.switched_orbitals = data
-
-
-@dataclass
-class TDCentricData(MethodologyData):
-    davidson_threshold: int
-    excited_state_transitions: dict
-
-
-@dataclass
-class ExcitationData(SpectraData):
-    n_ground_state: int
-    n_excited_state: int
-    final_state: int
-    n_excitation: int
-    n_active_space_mo: int
-    n_active_space_electron: int
-    active_space_start: int
-    active_space_end: int
-    active_space: np.ndarray
-    delta_diagonal_matrix: np.ndarray = None
-    beta_delta_diagonal_matrix: Optional[np.ndarray] = None
-    excitation_matrix: Optional[np.ndarray] = None
-    methodology_data: Optional[MethodologyData] = None
-    methodology: Optional[str] = None
-
-    def initialize_active_space(self):
-        self.active_space_end = self.active_space_start + self.n_active_space_mo
-        self.active_space = np.array(range(self.active_space_start, self.active_space_end), dtype=int)
-
-    def add_excitation_matrix(self, data: np.ndarray):
-        if self.excitation_matrix is None:
-            self.excitation_matrix = data
-
-    def add_delta_diagonal_matrix(self, data: np.ndarray):
-        if self.delta_diagonal_matrix is None:
-            self.delta_diagonal_matrix = data
-
-    def add_beta_delta_diagonal_matrix(self, data: np.ndarray):
-        if self.beta_delta_diagonal_matrix is None:
-            self.beta_delta_diagonal_matrix = data
-
-
-@dataclass
-class RealTimeData(SpectraData):
-    n_step: int
-    steps: pd.DataFrame
-
-
-@dataclass
-class TDData(ExcitationData):
-    n_ground_state: int = field(init=False)
-    final_state: int = field(init=False)
-    n_excitation: int = field(init=False)
-    active_space_start: int = field(init=False)
-    active_space_end: int = field(init=False)
-    active_space: np.ndarray = field(init=False)
-
-    def __post_init__(self):
-        self.n_ground_state = 1
-        self.final_state = self.n_ground_state + self.n_excited_state
-        self.n_excitation = self.n_excited_state
-        self.active_space_start = 0
-        self.initialize_active_space()
-        self.methodology = "TD"
-
-
-@dataclass
-class CASData(ExcitationData):
-    n_excited_state: int = field(init=False)
-    n_excitation: int = field(init=False)
-    active_space_end: int = field(init=False)
-    active_space: np.ndarray = field(init=False)
-
-    def __post_init__(self):
-        self.n_excited_state = self.methodology_data.n_root - self.n_ground_state
-        self.n_excitation = int((self.final_state * self.n_ground_state) - (self.n_ground_state * (self.n_ground_state + 1) / 2))
-        self.initialize_active_space()
-        self.methodology = "CAS"
-
-
 @dataclass
 class Box:
-    basic_data: BasicData
-    spectra_data: Optional[SpectraData] = None
-    pop_data: Optional[PopData] = None
+    basic_data: basic.BasicData
+    spectra_data: Optional[spectra.SpectraData] = None
+    pop_data: Optional[pop.PopData] = None
 
-    def add_spectra_data(self, data: SpectraData):
+    def add_spectra_data(self, data: spectra.SpectraData):
         if self.spectra_data is None:
             self.spectra_data = data
 
-    def add_pop_data(self, data: PopData):
+    def add_pop_data(self, data: pop.PopData):
         if self.pop_data is None:
             self.pop_data = data
 
-    def generate_mo_analysis(self, electron: str = "alpha"):
+    def generate_mo_analysis(self, electron: str = "alpha", full=False):
         if self.pop_data is None:
             raise ValueError(
                 "Cannot perform an MO Analysis. Please check that this object has population calculation.")
         if electron == "beta" and self.basic_data.scf_type == "UHF":
             ao_projection_matrix = self.pop_data.beta_electron_data.ao_projection_matrix
+            eigenvalues = self.pop_data.beta_electron_data.eigenvalues
         else:
             ao_projection_matrix = self.pop_data.electron_data.ao_projection_matrix
+            eigenvalues = self.pop_data.electron_data.eigenvalues
         ao_matrix = self.pop_data.ao_matrix
         ao_df = dfg.get_ao_dataframe(ao_matrix)
         df = dfg.get_mo_dataframe(ao_projection_matrix, 'MO ')
         df = pd.concat([ao_df, df], axis=1)
         df.set_index(
             ['Atom Number', 'Atom Type', 'Principal Quantum Number', 'Subshell', 'Atomic Orbital'], inplace=True)
+        if full:
+            df_1 = pd.concat([df], keys=[''], names=['Info'])
+            info_df = pd.DataFrame(columns=list(df_1.index.names) + list(df_1.columns))
+            info_df.set_index(list(df_1.index.names), inplace=True)
+            info_df.loc['Energy', :] = eigenvalues
+            info_df.loc['Total Sum', :] = df_1.sum().values
+            df = pd.concat([info_df, df_1])
         return df
 
     def generate_mo_transition_analysis(self, electron: str = "alpha"):
@@ -257,8 +116,3 @@ class Box:
         ao_projection_matrix = parse_matrices.convert_ao_projection_to_mo_transition(self.spectra_data.n_excitation, ao_projection_matrix)
         delta_diagonal_matrix = parse_matrices.convert_mo_transition_to_ao_projection(self.basic_data.n_mo, self.spectra_data.n_excitation, delta_diagonal_matrix)
         return np.multiply(ao_projection_matrix, delta_diagonal_matrix)
-
-
-
-
-

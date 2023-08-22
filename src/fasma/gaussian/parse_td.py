@@ -1,4 +1,4 @@
-from fasma.core import boxes as bx
+from fasma.core.dataclasses.data import excitation
 from fasma.core import messages as msg
 from fasma.gaussian import parse_excitation
 from fasma.gaussian import parse_functions
@@ -25,7 +25,7 @@ def check_td(basic, file_keyword_trie, file_lines) -> bool:
             n_active_space_mo = basic.n_mo
             n_active_space_electron = basic.n_electron
 
-            excitation_data = bx.TDData(n_excited_state=n_excited_state, n_active_space_mo=n_active_space_mo,
+            excitation_data = excitation.TDData(n_excited_state=n_excited_state, n_active_space_mo=n_active_space_mo,
                                         n_active_space_electron=n_active_space_electron)
             ground_state_list, excited_state_list, delta_energy_list, oscillations, alpha_delta_diagonal_list, beta_delta_diagonal_list = get_excitations_td(basic, file_keyword_trie, file_lines, excitation_data)
             excitation_matrix, delta_diagonal_matrix = parse_excitation.get_excitation_matrix(ground_state_list,

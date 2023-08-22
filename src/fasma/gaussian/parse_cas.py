@@ -1,4 +1,4 @@
-from fasma.core import boxes as bx
+from fasma.core.dataclasses.data import methodology, excitation
 from fasma.core import messages as msg
 from fasma.gaussian import parse_excitation
 from fasma.gaussian import parse_functions
@@ -25,8 +25,7 @@ def check_cas(basic, file_keyword_trie, file_lines) -> bool:
         de_min_status = temp_list[2]
         n_root = temp_list[3]
         n_ground_state = temp_list[4]
-        n_slater_determinant = int(file_lines[file_keyword_trie.find("NDet=")[0] - 1].split("NDet=")[1])
-        final_state_full = n_slater_determinant
+        final_state_full = int(file_lines[file_keyword_trie.find("NDet=")[0] - 1].split("NDet=")[1])
         active_space_start = basic.homo - n_active_space_electron
 
         if de_min_status == 1:
@@ -41,15 +40,14 @@ def check_cas(basic, file_keyword_trie, file_lines) -> bool:
         final_state = n_root
         n_excitation_full = int((final_state_full * n_ground_state) - (n_ground_state * (n_ground_state + 1) / 2))
 
-        cas_data = bx.CASCentricData(n_root=n_root, n_slater_determinant=n_slater_determinant, n_excitation_full=n_excitation_full)
+        cas_data = methodology.CASCentricData(n_root=n_root, n_excitation_full=n_excitation_full)
         try:
-            # Remember to swap orbitals later
             switched_orbitals = find_switched_orbitals(file_keyword_trie, file_lines)
         except ValueError:
             pass
         else:
             cas_data.add_switched_orbitals(switched_orbitals)
-        excitation_data = bx.CASData(n_ground_state=n_ground_state, final_state=final_state,
+        excitation_data = excitation.CASData(n_ground_state=n_ground_state, final_state=final_state,
                                      n_active_space_mo=n_active_space_mo,
                                      n_active_space_electron=n_active_space_electron,
                                      active_space_start=active_space_start, methodology_data=cas_data)
@@ -133,7 +131,7 @@ def dm_get_hartree(file_lines, line_num):
 
 
 def dm_get_diag(file_lines, line_num, n_active_space_mo):
-        start = line_num + 2
-        skip_amount = file_lines[start - 1].find("1") + 2
-        diag = (parse_matrices.parse_matrix_block(file_lines, start, n_active_space_mo, 1, skip_amount)).reshape((n_active_space_mo,))
-        return diag
+    start = line_num + 2
+    skip_amount = file_lines[start - 1].find("1") + 2
+    diag = (parse_matrices.parse_matrix_block(file_lines, start, n_active_space_mo, 1, skip_amount)).reshape((n_active_space_mo,))
+    return diag
