@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional
 import pandas as pd
 import numpy as np
+import h5py
 
 
 @dataclass
@@ -116,3 +117,11 @@ class Box:
         ao_projection_matrix = parse_matrices.convert_ao_projection_to_mo_transition(self.spectra_data.n_excitation, ao_projection_matrix)
         delta_diagonal_matrix = parse_matrices.convert_mo_transition_to_ao_projection(self.basic_data.n_mo, self.spectra_data.n_excitation, delta_diagonal_matrix)
         return np.multiply(ao_projection_matrix, delta_diagonal_matrix)
+
+    def save(self, filename):
+        with h5py.File(filename + ".hdf5", "a") as box_file:
+            self.basic_data.data_to_hdf5(box_file)
+            if self.pop_data is not None:
+                self.pop_data.data_to_hdf5(box_file)
+            if self.spectra_data is not None:
+                self.spectra_data.data_to_hdf5(box_file)

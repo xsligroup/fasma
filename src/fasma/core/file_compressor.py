@@ -1,9 +1,12 @@
+from fasma.core.dataclasses.data import excitation, basic, pop
 from fasma.gaussian import parse_gaussian as pg
-from fasma.core import file_reader as fr
 from fasma.core.dataclasses import boxes as bx
+from fasma.core import file_reader as fr
 import numpy as np
 import pandas as pd
 import pickle
+import h5py
+
 
 def parse(filename):
     key_trie_list, file_lines_list, file_type = fr.read(filename)
@@ -56,7 +59,7 @@ def merge_td(box_list):
     df_matrix = merged_mo_transition_analysis.to_numpy()
     excitation_matrix = df_matrix[:, excitation_index[0]: excitation_index[1] + 1]
     delta_diagonal_matrix = df_matrix[:, mo_index[0]: mo_index[1] + 1]
-    spectra_data = bx.TDData(n_excited_state=merged_mo_transition_analysis.shape[0], n_active_space_mo=basic_data.n_mo, n_active_space_electron=basic_data.n_electron, excitation_matrix=excitation_matrix, delta_diagonal_matrix=delta_diagonal_matrix)
+    spectra_data = excitation.TDData(n_excited_state=merged_mo_transition_analysis.shape[0], n_active_space_mo=basic_data.n_mo, n_active_space_electron=basic_data.n_electron, excitation_matrix=excitation_matrix, delta_diagonal_matrix=delta_diagonal_matrix)
     if basic_data.scf_type == "UHF":
         beta_mo_index = merged_mo_transition_analysis.columns.get_indexer(
             ['Beta AS MO 1', 'Beta AS MO ' + str(basic_data.n_mo)])
@@ -65,11 +68,27 @@ def merge_td(box_list):
     return bx.Box(basic_data, spectra_data=spectra_data, pop_data=pop_data)
 
 
-def save(item, filename):
+def save_pickle(item, filename):
     with open(filename, 'wb') as output:  # Overwrites any existing file.
         pickle.dump(item, output, pickle.HIGHEST_PROTOCOL)
 
 
-def load(filename):
+def load_pickle(filename):
     with open(filename, 'rb') as handle:
         return pickle.load(handle)
+
+
+def load(filename):
+    box_file = h5py.File(filename, 'r')
+    key_list = list(box_file.keys())
+    basic_data = basic.hdf5_to_data(box_file["/basic_data"])
+    if "spectra_data" in key_list:
+        spectra_data = excitation.hdf5_to_data(box_file["/spectra_data"])
+    else:
+        spectra_data = None
+    if "pop_data" in key_list:
+        pop_data = pop.hdf5_to_data(box_file["/pop_data"])
+    else:
+        pop_data = None
+    return bx.Box(basic_data=basic_data, spectra_data=spectra_data, pop_data=pop_data)
+
