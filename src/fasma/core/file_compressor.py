@@ -1,10 +1,10 @@
 from fasma.core.dataclasses.data import excitation, basic, pop
 from fasma.gaussian import parse_gaussian as pg
+from fasma.core.dataclasses import spectrum as sp
 from fasma.core.dataclasses import boxes as bx
 from fasma.core import file_reader as fr
 import numpy as np
 import pandas as pd
-import pickle
 import h5py
 
 
@@ -68,16 +68,6 @@ def merge_td(box_list):
     return bx.Box(basic_data, spectra_data=spectra_data, pop_data=pop_data)
 
 
-def save_pickle(item, filename):
-    with open(filename, 'wb') as output:  # Overwrites any existing file.
-        pickle.dump(item, output, pickle.HIGHEST_PROTOCOL)
-
-
-def load_pickle(filename):
-    with open(filename, 'rb') as handle:
-        return pickle.load(handle)
-
-
 def load(filename):
     box_file = h5py.File(filename, 'r')
     key_list = list(box_file.keys())
@@ -90,5 +80,24 @@ def load(filename):
         pop_data = pop.hdf5_to_data(box_file["/pop_data"])
     else:
         pop_data = None
+    box_file.close()
     return bx.Box(basic_data=basic_data, spectra_data=spectra_data, pop_data=pop_data)
+
+
+def save_spectra(spectra, filename):
+    with h5py.File(filename + ".hdf5", "a") as spectra_file:
+        for name, spectrum in spectra.items():
+            spectrum.data_to_hdf5(spectra_file, name)
+        spectra_file.create_dataset("spectra_list", data=list(spectra.keys()))
+
+
+def load_spectra(filename):
+    spectra_file = h5py.File(filename, 'r')
+    spectra_dict = {}
+    key_list = list(spectra_file['spectra_list'].asstr()[:])
+    for name in key_list:
+        spectra_dict[name] = sp.hdf5_to_data(spectra_file[name])
+    spectra_file.close()
+    return spectra_dict
+
 

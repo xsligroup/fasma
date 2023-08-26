@@ -11,6 +11,14 @@ class Spectrum:
     x: np.ndarray
     y: np.ndarray
 
+    def data_to_hdf5(self, file, name):
+        group = file.create_group(name)
+        group.create_dataset("freq", data=self.freq)
+        group.create_dataset("spect", data=self.spect)
+        group.create_dataset("x", data=self.x)
+        group.create_dataset("y", data=self.y)
+        group.attrs['type'] = "Spectrum"
+
 
 @dataclass
 class RTimeSpectrum(Spectrum):
@@ -41,11 +49,21 @@ class ImportedSpectrum(Spectrum):
     x: Optional[np.ndarray] = None
     y: Optional[np.ndarray] = None
 
+    def data_to_hdf5(self, file, name):
+        group = file.create_group(name)
+        group.create_dataset("freq", data=self.freq)
+        group.create_dataset("spect", data=self.spect)
+        group.attrs['type'] = "Imported"
+
 
 @dataclass
 class SimulatedSpectrum(Spectrum):
     freq: np.ndarray = field(init=False)
     spect: np.ndarray = field(init=False)
+
+    def add_broadened(self, freq, spect):
+        self.freq = freq
+        self.spect = spect
 
     def gen_spect(self, broad: float = 0.5, wlim=None, res: float = 100, xshift: float = 0, meth: str = 'lorentz'):
         meth = meth.lower()
@@ -83,3 +101,40 @@ class SimulatedSpectrum(Spectrum):
 
         for current_x, current_y in zip(self.x, self.y):
             self.spect += meth(broad, current_x, current_y, self.freq)
+
+    def data_to_hdf5(self, file, name):
+        group = file.create_group(name)
+        freq = getattr(self, 'freq', None)
+        spect = getattr(self, 'spect', None)
+        if freq is not None:
+            group.create_dataset("freq", data=freq)
+        if spect is not None:
+            group.create_dataset("spect", data=spect)
+        group.create_dataset("x", data=self.x)
+        group.create_dataset("y", data=self.y)
+        group.attrs['type'] = "Simulated"
+
+
+def hdf5_to_data(group):
+    spectrum_type = group.attrs['type']
+    key_list = group.keys()
+    if "x" in key_list:
+        x = group["x"][:]
+        y = group["y"][:]
+    else:
+        x = None
+        y = None
+    if "freq" in key_list:
+        freq = group["freq"][:]
+        spect = group["spect"][:]
+    else:
+        freq = None
+        spect = None
+    if spectrum_type == "Imported":
+        spectrum = ImportedSpectrum(freq=freq, spect=spect)
+    elif spectrum_type == "Simulated":
+        spectrum = SimulatedSpectrum(x=x, y=y)
+        spectrum.add_broadened(freq=freq, spect=spect)
+    else:
+        spectrum = Spectrum(freq=freq, spect=spect, x=x, y=y)
+    return spectrum
