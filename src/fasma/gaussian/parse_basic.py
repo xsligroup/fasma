@@ -28,8 +28,9 @@ def get_basic(file_keyword_trie, file_lines):
     lumo = homo + 1
 
     basic_data = basic.BasicData(atom_list=atom_list, scf_type=scf_type, n_basis=n_basis,
-                              n_primitive_gaussian=n_primitive_gaussian, n_alpha_electron=n_alpha_electron,
-                              n_beta_electron=n_beta_electron, n_electron=n_electron, n_mo=n_mo, homo=homo, lumo=lumo)
+                                 n_primitive_gaussian=n_primitive_gaussian, n_alpha_electron=n_alpha_electron,
+                                 n_beta_electron=n_beta_electron, n_electron=n_electron, n_mo=n_mo, homo=homo,
+                                 lumo=lumo)
     return basic_data
 
 
@@ -74,12 +75,11 @@ def find_scf_type(file_keyword_trie, file_lines) -> str:
     if retrieval == -2:
         line_num = file_keyword_trie.find("SCF Done")[0]
         line = file_lines[line_num - 1]
-        type = line.split()[2][2]
-        if type == "R" and line.split()[2][3] == "O":
-            type = "RO"
+        type_indicator = line.split()[2][2]
+        if type_indicator == "R" and line.split()[2][3] == "O":
+            type_indicator = "RO"
         type_dict = {"R": 1, "RO": 101, "U": 2, "G": 7}
-        retrieval = type_dict.get(type)
-        print(type)
+        retrieval = type_dict.get(type_indicator)
     key_dict = {1: "RHF", 101: "ROHF", 2: "UHF", 7: "GHF"}
     return key_dict.get(retrieval)
 

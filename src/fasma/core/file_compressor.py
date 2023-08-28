@@ -1,5 +1,6 @@
 from fasma.core.dataclasses.data import excitation, basic, pop
 from fasma.gaussian import parse_gaussian as pg
+from fasma.chronus import parse_chronus as pc
 from fasma.core.dataclasses import spectrum as sp
 from fasma.core.dataclasses import boxes as bx
 from fasma.core import file_reader as fr
@@ -12,9 +13,11 @@ def parse(filename):
     key_trie_list, file_lines_list, file_type = fr.read(filename)
     if file_type == "Gaussian":
         parse_meth = pg.parse
+    elif file_type == "ChronusQ":
+        parse_meth = pc.parse
     box_list = []
     for current_key_trie, current_file_lines in zip(key_trie_list, file_lines_list):
-        current_box = pg.parse(current_key_trie, current_file_lines)
+        current_box = parse_meth(current_key_trie, current_file_lines)
         box_list.append(current_box)
     if len(box_list) == 1:
         box_list = box_list[0]

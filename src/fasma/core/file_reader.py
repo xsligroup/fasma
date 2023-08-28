@@ -89,7 +89,7 @@ def read_chronus(filename):
         raise OSError("The file with the given path cannot be opened. Please try again.")
     else:
         for current_line_list in list_of_lines_list:
-            if "ChronusQ Job Ended" not in current_line_list[-3]:
+            if "ChronusQ Job Ended" not in current_line_list[-2]:
                 warnings.warn("This file was not terminated normally. Check if this is the intended .out file.")
     return list_of_key_tries, list_of_lines_list
 
