@@ -40,7 +40,7 @@ def get_alpha_electron_data(basic, file_keyword_trie, file_lines, cas_status):
     density_matrix = get_density_matrix(basic=basic, file_keyword_trie=file_keyword_trie, file_lines=file_lines, cas_status=cas_status)
     mo_coefficient_matrix = get_mo_coefficient_matrix(basic=basic, file_keyword_trie=file_keyword_trie, file_lines=file_lines)
     eigenvalues = get_eigenvalues(file_keyword_trie=file_keyword_trie, file_lines=file_lines, n_mo=basic.n_mo)
-    return electron.ElectronData(density_matrix, mo_coefficient_matrix, eigenvalues)
+    return electron.ElectronData(mo_coefficient_matrix, eigenvalues, density_matrix=density_matrix)
 
 
 def get_beta_electron_data(basic, file_keyword_trie, file_lines, cas_status):
@@ -96,12 +96,14 @@ def parse_ao_line(current_line, subshell_position):
 
 def get_ao_matrix(basic, file_keyword_trie, file_lines):
     start = file_keyword_trie.find("Eigenvalues")[0] + 1
+    print(start)
     ao_matrix = np.empty((basic.n_mo, 5), dtype='<U12')
     subshell_position = file_lines[start - 1].rfind('S')
     counter = 0
     n_lines = basic.n_mo
     if basic.scf_type == "GHF":
         n_lines *= 2
+    print(start + n_lines)
     for current_ao in range(n_lines):
         if basic.scf_type == "GHF" and current_ao % 2 != 0:
             continue
@@ -109,8 +111,12 @@ def get_ao_matrix(basic, file_keyword_trie, file_lines):
         ao_row = parse_ao_line(line, subshell_position)
         if len(ao_row) == 5:
             atom_info = ao_row[0:2]
-        else:
+            subshell_info = ao_row[2:]
+        elif len(ao_row) == 3:
+            subshell_info = ao_row
             ao_row = atom_info + ao_row
+        elif len(ao_row) == 0:
+            ao_row = atom_info + subshell_info
         ao_row = np.array(ao_row, dtype='<U12')
         ao_matrix[counter, :] = ao_row
         counter += 1
@@ -135,7 +141,7 @@ def get_overlap_matrix(basic, file_keyword_trie, file_lines) -> np.array:
 
 
 def get_ghf_density_matrix(basic, file_keyword_trie, file_lines):
-    temp = file_keyword_trie.find("Density matrix")[0:2]
+    temp = file_keyword_trie.find("Density matrix (")[0:2]
     real_matrix_start = temp[0] + 2
     imaginary_matrix_start = temp[1] + 2
     real_matrix = parse_matrices.parse_matrix(file_lines, start=real_matrix_start, n_mo=basic.n_mo, triangular=True)

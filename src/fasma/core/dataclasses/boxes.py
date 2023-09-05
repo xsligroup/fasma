@@ -22,7 +22,7 @@ class Box:
         if self.pop_data is None:
             self.pop_data = data
 
-    def generate_mo_analysis(self, electron: str = "alpha", full=False):
+    def generate_mo_analysis(self, electron: str = "alpha", full=False, zero_index=False):
         if self.pop_data is None:
             raise ValueError(
                 "Cannot perform an MO Analysis. Please check that this object has population calculation.")
@@ -34,7 +34,7 @@ class Box:
             eigenvalues = self.pop_data.electron_data.eigenvalues
         ao_matrix = self.pop_data.ao_matrix
         ao_df = dfg.get_ao_dataframe(ao_matrix)
-        df = dfg.get_mo_dataframe(ao_projection_matrix, 'MO ')
+        df = dfg.get_mo_dataframe(ao_projection_matrix, 'MO ', zero_index)
         df = pd.concat([ao_df, df], axis=1)
         df.set_index(
             ['Atom Number', 'Atom Type', 'Principal Quantum Number', 'Subshell', 'Atomic Orbital'], inplace=True)
@@ -47,7 +47,7 @@ class Box:
             df = pd.concat([info_df, df_1])
         return df
 
-    def generate_mo_transition_analysis(self, electron: str = "alpha"):
+    def generate_mo_transition_analysis(self, electron: str = "alpha", zero_index=False):
         if self.spectra_data is None:
             raise ValueError(
                 "Cannot perform an MO Transition Analysis. Please check that this object has an excited state calculation.")
@@ -58,7 +58,7 @@ class Box:
         excitation_matrix = self.spectra_data.excitation_matrix
         excitation_df = dfg.get_excitations_dataframe(self.spectra_data.methodology, excitation_matrix)
         summary_df = dfg.get_summary_dataframe(parse_matrices.summarize_matrix(delta_diagonal_matrix))
-        df = dfg.get_mo_dataframe(delta_diagonal_matrix, 'AS MO ')
+        df = dfg.get_mo_dataframe(delta_diagonal_matrix, 'AS MO ', zero_index)
         df = pd.concat([excitation_df, summary_df, df], axis=1)
         df.set_index(['Starting State', 'Ending State'], inplace=True)
         return df

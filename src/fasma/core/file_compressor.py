@@ -13,11 +13,23 @@ def parse(filename):
     key_trie_list, file_lines_list, file_type = fr.read(filename)
     if file_type == "Gaussian":
         parse_meth = pg.parse
-    elif file_type == "ChronusQ":
-        parse_meth = pc.parse
+    #elif file_type == "ChronusQ":
+        #parse_meth = pc.parse
     box_list = []
     for current_key_trie, current_file_lines in zip(key_trie_list, file_lines_list):
         current_box = parse_meth(current_key_trie, current_file_lines)
+        box_list.append(current_box)
+    if len(box_list) == 1:
+        box_list = box_list[0]
+    return box_list
+
+
+def parse_chronus(filename, bin_filename):
+    key_trie_list, file_lines_list, file_type = fr.read(filename)
+    bin_file = h5py.File(bin_filename, 'r')
+    box_list = []
+    for current_key_trie, current_file_lines in zip(key_trie_list, file_lines_list):
+        current_box = pc.parse(current_key_trie, current_file_lines, bin_file)
         box_list.append(current_box)
     if len(box_list) == 1:
         box_list = box_list[0]

@@ -111,21 +111,21 @@ def get_ao_dataframe(ao_matrix) -> np.array:
     data_dict = {"Atom Number": ao_matrix[:, 0], "Atom Type": ao_matrix[:, 1],
                  "Principal Quantum Number": ao_matrix[:, 2], "Subshell": ao_matrix[:, 3],
                  "Atomic Orbital": ao_matrix[:, 4]}
-
     df = pd.DataFrame(data_dict)
-
+    df["Atom Number"] = pd.to_numeric(df["Atom Number"])
+    df["Principal Quantum Number"] = pd.to_numeric(df["Principal Quantum Number"])
     return df
 
 
 def get_summary_dataframe(summary_matrix) -> np.array:
     data_dict = {"total sum": summary_matrix[:, 0], "particle sum": summary_matrix[:, 1], "hole sum": summary_matrix[:, 2]}
     df = pd.DataFrame(data_dict)
-
     return df
 
 
-def get_mo_dataframe(delta_diagonal_matrix, title):
+def get_mo_dataframe(delta_diagonal_matrix, title, zero_index):
     mo_transition_df = pd.DataFrame(delta_diagonal_matrix)
-    mo_transition_df.columns += 1
+    if not zero_index:
+        mo_transition_df.columns += 1
     df = mo_transition_df.add_prefix(title)
     return df
