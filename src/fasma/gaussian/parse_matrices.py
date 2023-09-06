@@ -6,7 +6,6 @@ def parse_mo_coefficient_matrix(basic, file_lines, start: int, last_string="S", 
     n_row_block = basic.n_mo
     if basic.scf_type == "GHF":
         n_row_block *= 2
-        block_skip = 2
     matrix = np.zeros((n_row_block, basic.n_mo))
     cycles = m.ceil(basic.n_mo / n_col)
     n_col_block = n_col

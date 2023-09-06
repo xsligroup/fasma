@@ -37,7 +37,7 @@ class Box:
         df = dfg.get_mo_dataframe(ao_projection_matrix, 'MO ', zero_index)
         df = pd.concat([ao_df, df], axis=1)
         df.set_index(
-            ['Atom Number', 'Atom Type', 'Principal Quantum Number', 'Subshell', 'Atomic Orbital'], inplace=True)
+            ['Atom Number', 'Atom Type', 'Shell Number', 'Angular Momentum', 'Magnetic QN'], inplace=True)
         if full:
             df_1 = pd.concat([df], keys=[''], names=['Info'])
             info_df = pd.DataFrame(columns=list(df_1.index.names) + list(df_1.columns))
@@ -97,8 +97,7 @@ class Box:
         summary_df = dfg.get_summary_dataframe(parse_matrices.summarize_matrix(ao_transition_matrix))
         df = dfg.get_mo_dataframe(ao_transition_matrix, 'AS MO ')
         df = pd.concat([excitation_df, ao_df, summary_df, df], axis=1)
-        index_list = ['Starting State', 'Ending State', 'Atom Number', 'Atom Type', 'Principal Quantum Number',
-             'Subshell', 'Atomic Orbital']
+        index_list = ['Starting State', 'Ending State', 'Atom Number', 'Atom Type', 'Shell Number', 'Angular Momentum', 'Magnetic QN']
         df.set_index(index_list, inplace=True)
         return df
 

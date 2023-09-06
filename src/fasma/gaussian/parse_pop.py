@@ -86,24 +86,29 @@ def parse_ao_line(current_line, subshell_position):
     ao_dict = {"XX": "D", "YY": "D", "ZZ": "D", "XY": "D", "XZ": "D", "YZ": "D", "XXX": "F", "YYY": "F", "ZZZ": "F",
                "XYY": "F", "XXY": "F", "XXZ": "F", "XZZ": "F", "YZZ": "F", "YYZ": "F", "XYZ": "F"}
     subshell = current_line[subshell_position]
-    atomic_orbital = current_line[subshell_position: subshell_position + 3].strip()
-    if atomic_orbital in ao_dict:
-        subshell = ao_dict.get(atomic_orbital)
-        atomic_orbital = subshell+atomic_orbital
-    line = (current_line[0:subshell_position] + " " + subshell + " " + atomic_orbital).replace(" 0", "0")
+    if subshell in ["X", "Y", "Z"]:
+        atomic_orbital = current_line[subshell_position: subshell_position + 3].strip()
+        if atomic_orbital in ao_dict:
+            subshell = ao_dict.get(atomic_orbital)
+    else:
+        if subshell == "S":
+            atomic_orbital = "0"
+        else:
+            atomic_orbital = current_line[subshell_position + 1: subshell_position + 3].strip()
+            if atomic_orbital == " 0":
+                atomic_orbital == "0"
+    line = (current_line[0:subshell_position] + " " + subshell + " " + atomic_orbital)
     return line.split()[1:]
 
 
 def get_ao_matrix(basic, file_keyword_trie, file_lines):
     start = file_keyword_trie.find("Eigenvalues")[0] + 1
-    print(start)
     ao_matrix = np.empty((basic.n_mo, 5), dtype='<U12')
     subshell_position = file_lines[start - 1].rfind('S')
     counter = 0
     n_lines = basic.n_mo
     if basic.scf_type == "GHF":
         n_lines *= 2
-    print(start + n_lines)
     for current_ao in range(n_lines):
         if basic.scf_type == "GHF" and current_ao % 2 != 0:
             continue
@@ -168,7 +173,11 @@ def get_mo_coefficient_matrix(basic, file_keyword_trie, file_lines, n_col=5, bet
     else:
         index = 0
     start = file_keyword_trie.find("Eigenvalues")[index] + 1
-    mo_coefficient_matrix = parse_matrices.parse_mo_coefficient_matrix(basic, file_lines, start=start)
+    if basic.scf_type == "GHF" and file_keyword_trie.find("Entering Link 1 = /sw/contrib/gaussian/gdv/J25p/gdv/l1.exe") is not None:
+        block_skip = 3
+    else:
+        block_skip = 2
+    mo_coefficient_matrix = parse_matrices.parse_mo_coefficient_matrix(basic, file_lines, start=start, block_skip=block_skip)
     if basic.scf_type == "GHF":
         real_matrix = mo_coefficient_matrix[0::2]
         imaginary_matrix = mo_coefficient_matrix[1::2]

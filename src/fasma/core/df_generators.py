@@ -41,12 +41,9 @@ def get_spectra_dict(dataframe, spectra_name="", keep_all=False):
         if len(mo_columns) == 0:
             mo_columns = [list(dataframe)[1]]
             absorption = True
-    if "Subshell" in dataframe.index.names and "Atomic Orbital" in dataframe.index.names:
-        warnings.warn("The provided dataframe is broken down by Atomic Orbital and not Subshell. If a subshell breakdown was desired, drop 'Atomic Orbital' from the index list when calling extract_dataframe_plotting data().")
-        dataframe = dataframe.reset_index(level='Subshell', drop=True)
     label = ""
     if "Starting State" in dataframe.index.names:
-            label += " State {} "
+        label += " State {} "
     if "total sum" not in mo_columns and not absorption:
         label += "{} "
     if "Atom Number" in dataframe.index.names:
@@ -55,11 +52,15 @@ def get_spectra_dict(dataframe, spectra_name="", keep_all=False):
         label += "{}"
     if "Atom Type" in dataframe.index.names:
         label += "{} "
-    if "Principal Quantum Number" in dataframe.index.names:
-        if "Subshell" not in dataframe.index.names and "Atomic Orbital" not in dataframe.index.names:
-            label += "PQN "
+    if "Shell Number" in dataframe.index.names:
+        if "Angular Momentum" not in dataframe.index.names:
+            label += "SN "
         label += "{}"
-    if "Subshell" in dataframe.index.names or "Atomic Orbital" in dataframe.index.names:
+    if "Angular Momentum" in dataframe.index.names:
+        label += "{}"
+    if "Magnetic QN" in dataframe.index.names:
+        if "Angular Momentum" not in dataframe.index.names:
+            label += " m_l = "
         label += "{}"
     spectra_dict = {}
     index_list = list(dataframe.index)
@@ -109,11 +110,12 @@ def get_ao_dataframe(ao_matrix) -> np.array:
     :return: a numpy array containing the oscillation strength of every excited state from each ground state.
     """
     data_dict = {"Atom Number": ao_matrix[:, 0], "Atom Type": ao_matrix[:, 1],
-                 "Principal Quantum Number": ao_matrix[:, 2], "Subshell": ao_matrix[:, 3],
-                 "Atomic Orbital": ao_matrix[:, 4]}
+                 "Shell Number": ao_matrix[:, 2], "Angular Momentum": ao_matrix[:, 3],
+                 "Magnetic QN": ao_matrix[:, 4]}
     df = pd.DataFrame(data_dict)
     df["Atom Number"] = pd.to_numeric(df["Atom Number"])
-    df["Principal Quantum Number"] = pd.to_numeric(df["Principal Quantum Number"])
+    df["Shell Number"] = pd.to_numeric(df["Shell Number"])
+
     return df
 
 

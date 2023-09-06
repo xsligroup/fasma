@@ -60,9 +60,14 @@ def get_ao_matrix(basic, file_keyword_trie, file_lines):
 
 def parse_ao_line(current_line, subshell_position):
     subshell = current_line[subshell_position]
-    atomic_orbital = current_line[subshell_position: subshell_position + 3].strip()
+    if subshell == "S":
+        atomic_orbital = "0"
+    else:
+        atomic_orbital = current_line[subshell_position + 1: subshell_position + 3].strip()
     line = current_line[0:subshell_position] + " " + subshell + " " + atomic_orbital
-    return line.split()[1:]
+    line = line.split()[1:]
+    line[1] = line[1].split("-")[0]
+    return line
 
 
 def get_alpha_electron_data(basic, file_keyword_trie, file_lines, neo_status):
