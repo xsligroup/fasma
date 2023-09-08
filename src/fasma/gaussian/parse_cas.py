@@ -1,6 +1,6 @@
 from fasma.core.dataclasses.data import methodology, excitation
 from fasma.core import messages as msg
-from fasma.gaussian import parse_excitation
+from fasma.core import parse_excitation
 from fasma.gaussian import parse_functions
 from fasma.gaussian import parse_matrices
 import numpy as np

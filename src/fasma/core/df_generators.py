@@ -93,10 +93,10 @@ def get_spectra_dict(dataframe, spectra_name="", keep_all=False):
     return spectra_dict
 
 
-def get_excitations_dataframe(methodology, excitation_matrix):
+def get_excitations_dataframe(excitation_matrix):
     data_dict = {"Starting State": excitation_matrix[:, 0], "Ending State": excitation_matrix[:, 1],
                  "transition energy": excitation_matrix[:, 2], "oscillator strength": excitation_matrix[:, 3]}
-    if methodology == "TD":
+    if excitation_matrix.shape[1] == 6:
         data_dict.update({"rotatory strength (velocity)": excitation_matrix[:, 4], "rotatory strength (length)": excitation_matrix[:, 5]})
     df = pd.DataFrame(data_dict)
     df = df.astype({"Starting State": int, "Ending State": int})

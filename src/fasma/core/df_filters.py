@@ -1,43 +1,81 @@
 import pandas as pd
+import re
 
 
-def filter_mo_analysis(dataframe: pd.DataFrame, index: list = [], mo_list: list = []):
+def filter_mo_analysis(dataframe: pd.DataFrame, index: list = [], mo_list=None, atoms: dict = None):
     columns = [i for i in list(dataframe) if 'sum' in i or 'MO' in i]
+    if atoms:
+        dataframe = dataframe.reset_index()
+        for label, atom_list in atoms.items():
+            if isinstance(atom_list, str):
+                atom_list = range_translator(atom_list)
+            dataframe.loc[dataframe["Atom Number"].isin(atom_list), "Atom Type"] = label
+        dataframe.set_index(["Atom Number", "Atom Type",
+                         "Shell Number", "Angular Momentum",
+                         "Magnetic QN"], inplace=True)
     if index:
-        if "Info" in dataframe.index.names:
-            index = ["Info"] + index
         dataframe = dataframe.groupby(index, sort=False)[columns].sum()
     if mo_list:
+        if isinstance(mo_list, str):
+            mo_list = range_translator(mo_list)
         kept_mo = ['MO ' + str(number) for number in mo_list]
         dataframe = dataframe[kept_mo]
     return dataframe
 
 
-def filter_transition_rows(dataframe: pd.DataFrame, index: list = [], attributes: list = ["transition energy", "oscillator strength"], energy_range: tuple = None):
+def filter_transition_rows(dataframe: pd.DataFrame, index: list = [], attributes: list = ["transition energy", "oscillator strength"], energy_range: tuple = None, atoms: dict = None):
     if energy_range is not None:
         dataframe = dataframe[(dataframe['transition energy'] >= energy_range[0]) & (dataframe['transition energy'] <= energy_range[1])]
     columns = [i for i in list(dataframe) if 'sum' in i or 'MO' in i]
+    if atoms:
+        dataframe = dataframe.reset_index(level=["Atom Number", "Atom Type",
+                             "Shell Number", "Angular Momentum",
+                             "Magnetic QN"])
+        for label, atom_list in atoms.items():
+            if isinstance(atom_list, str):
+                atom_list = range_translator(atom_list)
+            dataframe.loc[dataframe["Atom Number"].isin(atom_list), "Atom Type"] = label
+        dataframe.set_index(["Atom Number", "Atom Type",
+                             "Shell Number", "Angular Momentum",
+                             "Magnetic QN"], append=True)
     group_list = ["Starting State", "Ending State"] + index + attributes
     dataframe = dataframe.groupby(group_list, sort=False)[columns].sum()
     dataframe.reset_index(level=attributes, inplace=True)
     return dataframe
 
 
+def range_translator(string):
+    range_list = []
+    string = re.sub(r"[a-zA-Z()]+", "", string).replace(",", " ").split()
+    for current_string in string:
+        if ":" in current_string:
+            range_val = current_string.split(":")
+            range_list += list(range(int(range_val[0]), int(range_val[1]) + 1))
+        else:
+            range_list.append(int(current_string))
+    return range_list
+
+
 def filter_transition_columns(dataframe, custom_mo_dict, box):
     new_df = dataframe.copy()
     mo_dict = {}
+    if isinstance(custom_mo_dict, str):
+        custom_mo_dict = range_translator(custom_mo_dict)
     if isinstance(custom_mo_dict, list):
         mo_list = custom_mo_dict
         custom_mo_dict = {}
     elif isinstance(custom_mo_dict, dict):
         mo_list = []
         for label, mo in custom_mo_dict.items():
+            if isinstance(mo, str):
+                mo = range_translator(mo)
             mo_list += mo
             custom_mo_dict[label] = ['AS MO ' + str(number) for number in mo]
-    core_column = ['AS MO ' + str(mo) for mo in range(1, box.basic_data.homo + 1) if mo not in mo_list]
+    start = "AS MO " + str(box.basic_data.n_mo) in dataframe.columns
+    core_column = ['AS MO ' + str(mo) for mo in range(start, box.basic_data.homo + start) if mo not in mo_list]
     mo_dict["core"] = core_column
     mo_dict.update(custom_mo_dict)
-    valence_column = ['AS MO ' + str(mo) for mo in range(box.basic_data.homo + 1, box.basic_data.n_mo + 1) if mo not in mo_list]
+    valence_column = ['AS MO ' + str(mo) for mo in range(box.basic_data.homo + start, box.basic_data.n_mo + start) if mo not in mo_list]
     mo_dict["valence"] = valence_column
     for label, column_list in mo_dict.items():
         combine_mo_columns(new_df, label, column_list)

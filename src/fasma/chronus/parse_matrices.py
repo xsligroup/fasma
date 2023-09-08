@@ -3,7 +3,7 @@ import math as m
 
 
 def parse_mo_coefficient_matrix(basic, file_lines, start: int, last_string="S", space_skip=6, n_col=4, block_skip=4):
-    n_row_block = basic.n_mo
+    n_row_block = basic.n_basis
     matrix = np.zeros((n_row_block, basic.n_mo))
     cycles = m.ceil(basic.n_mo / n_col)
     n_col_block = n_col

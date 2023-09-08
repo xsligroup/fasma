@@ -2,6 +2,7 @@ from fasma.core.dataclasses.data import pop, electron
 from fasma.core import messages as msg
 from fasma.gaussian import parse_functions
 from fasma.gaussian import parse_matrices
+from fasma.core import matrices
 import numpy as np
 import math as m
 
@@ -21,19 +22,14 @@ def check_pop(basic, file_keyword_trie, file_lines, cas_status: bool) -> bool:
             ao_matrix = get_ao_matrix(basic, file_keyword_trie, file_lines)
             overlap_matrix = get_overlap_matrix(basic, file_keyword_trie, file_lines)
             electron_data = get_alpha_electron_data(basic, file_keyword_trie, file_lines, cas_status)
-            calculate_ao_projection(overlap_matrix, electron_data)
+            matrices.calculate_ao_projection(overlap_matrix, electron_data)
             pop_data = pop.PopData(ao_matrix=ao_matrix, overlap_matrix=overlap_matrix, electron_data=electron_data)
             if (basic.scf_type == "ROHF" and cas_status) or basic.scf_type == "UHF":
                 beta_electron_data = get_beta_electron_data(basic, file_keyword_trie, file_lines, cas_status)
-                calculate_ao_projection(overlap_matrix, beta_electron_data)
+                matrices.calculate_ao_projection(overlap_matrix, beta_electron_data)
                 pop_data.add_beta_electron_data(beta_electron_data)
             return pop_data
     return
-
-
-def calculate_ao_projection(overlap_matrix, electron_data):
-    ao_projection_matrix = np.multiply(np.dot(overlap_matrix, electron_data.mo_coefficient_matrix), np.conjugate(electron_data.mo_coefficient_matrix))
-    electron_data.add_ao_projection_matrix(ao_projection_matrix)
 
 
 def get_alpha_electron_data(basic, file_keyword_trie, file_lines, cas_status):
@@ -141,7 +137,6 @@ def get_overlap_matrix(basic, file_keyword_trie, file_lines) -> np.array:
     if basic.scf_type == "GHF":
         identity = np.array([[1.0, 0.0], [0.0, 1.0]], dtype=np.complex128)
         overlap_matrix = np.kron(overlap_matrix, identity)
-
     return overlap_matrix
 
 

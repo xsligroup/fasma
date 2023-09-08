@@ -17,7 +17,7 @@ def get_basic(file_keyword_trie, file_lines):
     n_electron = temp[2]
 
     if scf_type == "GHF":
-        n_alpha_electron = n_electron / 2
+        n_alpha_electron = n_electron // 2
     else:
         n_alpha_electron = count_electrons_type(file_keyword_trie, file_lines, "alpha")
     if scf_type == "RHF" or scf_type == "GHF":
@@ -45,7 +45,7 @@ def get_atom_list(file_keyword_trie, file_lines) -> list:
     Finds all the atoms present in the molecule of the .out file and returns them as a list.
     :return: the list of all atoms in the molecule of the .out file
     """
-    current_line_num = file_keyword_trie.find("GEOM")[0] + 1
+    current_line_num = file_keyword_trie.find("GEOM:")[0] + 1
 
     atom_list = []
 

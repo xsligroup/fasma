@@ -44,3 +44,15 @@ def swap_ao_projection_orbitals(ao_projection_matrix, swapped_orbitals):
         col_2 = swapped_orbitals[i, 1]
         swapped_matrix[:, [col_1, col_2]] = swapped_matrix[:, [col_2, col_1]]
     return swapped_matrix
+
+
+def interweave_matrix(a_matrix, b_matrix):
+    c = np.empty((a_matrix.shape[0] + b_matrix.shape[0], a_matrix.shape[1]), dtype=a_matrix.dtype)
+    c[0::2, :] = a_matrix
+    c[1::2, :] = b_matrix
+    return c
+
+
+def calculate_ao_projection(overlap_matrix, electron_data):
+    ao_projection_matrix = np.multiply(np.dot(overlap_matrix, electron_data.mo_coefficient_matrix), np.conjugate(electron_data.mo_coefficient_matrix))
+    electron_data.add_ao_projection_matrix(ao_projection_matrix)
