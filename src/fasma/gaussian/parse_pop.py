@@ -168,10 +168,11 @@ def get_mo_coefficient_matrix(basic, file_keyword_trie, file_lines, n_col=5, bet
     else:
         index = 0
     start = file_keyword_trie.find("Eigenvalues")[index] + 1
-    if basic.scf_type == "GHF" and file_keyword_trie.find("Entering Link 1 = /sw/contrib/gaussian/gdv/J25p/gdv/l1.exe") is not None:
-        block_skip = 3
-    else:
+    if basic.scf_type == "GHF" and file_keyword_trie.find("Revision J.25+") is None:
         block_skip = 2
+    else:
+        block_skip = 3
+
     mo_coefficient_matrix = parse_matrices.parse_mo_coefficient_matrix(basic, file_lines, start=start, block_skip=block_skip)
     if basic.scf_type == "GHF":
         real_matrix = mo_coefficient_matrix[0::2]

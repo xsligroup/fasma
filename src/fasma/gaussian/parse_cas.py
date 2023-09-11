@@ -104,6 +104,7 @@ def cas_get_excited_state(file_lines, ground_diag, ground_energy, diag_line_num,
     return delta_diagonal, energy_value, osc_value
 
 
+# Need to -1?
 def find_switched_orbitals(file_keyword_trie, file_lines) -> np.array:
     """
     Find and checks if there are switched orbitals. If so, returns a matrix containing the switched orbital pairs.
