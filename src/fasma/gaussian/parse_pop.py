@@ -132,7 +132,7 @@ def get_overlap_matrix(basic, file_keyword_trie, file_lines) -> np.array:
     """
     overlap_matrix_state_line_num = file_keyword_trie.find("Overlap")[0] + 2
     triangular_overlap_matrix = parse_matrices.parse_matrix(file_lines, start=overlap_matrix_state_line_num, n_mo=basic.n_basis, triangular=True)
-    overlap_matrix = parse_matrices.square_trig_matrix(triangular_overlap_matrix)
+    overlap_matrix = matrices.square_trig_matrix(triangular_overlap_matrix)
 
     if basic.scf_type == "GHF":
         identity = np.array([[1.0, 0.0], [0.0, 1.0]], dtype=np.complex128)
@@ -146,7 +146,7 @@ def get_ghf_density_matrix(basic, file_keyword_trie, file_lines):
     imaginary_matrix_start = temp[1] + 2
     real_matrix = parse_matrices.parse_matrix(file_lines, start=real_matrix_start, n_mo=basic.n_mo, triangular=True)
     imaginary_matrix = parse_matrices.parse_matrix(file_lines, start=imaginary_matrix_start, n_mo=basic.n_mo, triangular=True)
-    return parse_matrices.combine_complex_matrix(real_matrix, imaginary_matrix)
+    return matrices.combine_complex_matrix(real_matrix, imaginary_matrix)
 
 
 def get_density_matrix(basic, file_keyword_trie, file_lines, cas_status=False, beta=False):
@@ -177,5 +177,5 @@ def get_mo_coefficient_matrix(basic, file_keyword_trie, file_lines, n_col=5, bet
     if basic.scf_type == "GHF":
         real_matrix = mo_coefficient_matrix[0::2]
         imaginary_matrix = mo_coefficient_matrix[1::2]
-        mo_coefficient_matrix = parse_matrices.combine_complex_matrix(real_matrix, imaginary_matrix)
+        mo_coefficient_matrix = matrices.combine_complex_matrix(real_matrix, imaginary_matrix)
     return mo_coefficient_matrix

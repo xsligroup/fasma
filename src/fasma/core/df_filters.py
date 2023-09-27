@@ -4,16 +4,17 @@ import re
 
 def filter_mo_analysis(dataframe: pd.DataFrame, index: list = [], mo_list=None, atoms: dict = None):
     columns = [i for i in list(dataframe) if 'sum' in i or 'MO' in i]
+    index_list = list(dataframe.index.names)
     if atoms:
         dataframe = dataframe.reset_index()
         for label, atom_list in atoms.items():
             if isinstance(atom_list, str):
                 atom_list = range_translator(atom_list)
             dataframe.loc[dataframe["Atom Number"].isin(atom_list), "Atom Type"] = label
-        dataframe.set_index(["Atom Number", "Atom Type",
-                         "Shell Number", "Angular Momentum",
-                         "Magnetic QN"], inplace=True)
+        dataframe.set_index(index_list, inplace=True)
     if index:
+        if "Info" in index_list:
+            index = ["Info"] + index
         dataframe = dataframe.groupby(index, sort=False)[columns].sum()
     if mo_list:
         if isinstance(mo_list, str):
@@ -21,6 +22,13 @@ def filter_mo_analysis(dataframe: pd.DataFrame, index: list = [], mo_list=None, 
         kept_mo = ['MO ' + str(number) for number in mo_list]
         dataframe = dataframe[kept_mo]
     return dataframe
+
+def mo_analysis_transpose(dataframe):
+    df = pd.concat([filter_mo_analysis(dataframe, ["Atom Type"]), filter_mo_analysis(dataframe, ["Atom Type", "Angular Momentum"]).reset_index(level="Angular Momentum").iloc[2:]], axis = 0).reset_index(level="Atom Type")
+    df = df.assign(teamgroup=pd.factorize(df['Atom Type'])[0]).sort_values(['teamgroup']).drop(columns='teamgroup')
+    df['Angular Momentum'] = df['Angular Momentum'].fillna(value="")
+    df.set_index(['Atom Type', 'Angular Momentum'], append=True, inplace=True)
+    return df.transpose()
 
 
 def filter_transition_rows(dataframe: pd.DataFrame, index: list = [], attributes: list = ["transition energy", "oscillator strength"], energy_range: tuple = None, atoms: dict = None):
@@ -46,7 +54,7 @@ def filter_transition_rows(dataframe: pd.DataFrame, index: list = [], attributes
 
 def range_translator(string):
     range_list = []
-    string = re.sub(r"[a-zA-Z()]+", "", string).replace(",", " ").split()
+    string = re.sub(r"[a-zA-Z()]+", "", string).replace("[", "").replace("]", "").replace(",", " ").split()
     for current_string in string:
         if ":" in current_string:
             range_val = current_string.split(":")
