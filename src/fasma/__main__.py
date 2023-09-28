@@ -4,6 +4,7 @@ from fasma.core import df_filters as dff
 from fasma.core import printer
 from pathlib import Path
 import ast
+import os
 
 parser = ArgumentParser()
 
@@ -16,9 +17,12 @@ parser.add_argument("--atom", help='Dictionary of custom atom groupings', type=s
 args: Namespace = parser.parse_args()
 
 box = fc.parse(args.filepath)
-filename = Path(args.filepath).stem
+directory = os.getcwd()
+filename = directory + "/"
 if args.filename:
-    filename = args.filename
+    filename += args.filename
+else:
+    filename += Path(args.filepath).stem
 if args.save:
     box.save(filename)
 if args.print:
