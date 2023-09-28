@@ -27,11 +27,11 @@ class Box:
             raise ValueError(
                 "Cannot perform an MO Analysis. Please check that this object has population calculation.")
         if electron == "beta" and self.basic_data.scf_type == "UHF":
-            ao_projection_matrix = self.pop_data.beta_electron_data.ao_projection_matrix
-            eigenvalues = self.pop_data.beta_electron_data.eigenvalues
+            ao_projection_matrix = self.pop_data.beta_electron_data.ao_projection_matrix.real
+            eigenvalues = self.pop_data.beta_electron_data.eigenvalues.real
         else:
-            ao_projection_matrix = self.pop_data.electron_data.ao_projection_matrix
-            eigenvalues = self.pop_data.electron_data.eigenvalues
+            ao_projection_matrix = self.pop_data.electron_data.ao_projection_matrix.real
+            eigenvalues = self.pop_data.electron_data.eigenvalues.real
         ao_matrix = self.pop_data.ao_matrix
         ao_df = dfg.get_ao_dataframe(ao_matrix)
         df = dfg.get_mo_dataframe(ao_projection_matrix, 'MO ', zero_index)
