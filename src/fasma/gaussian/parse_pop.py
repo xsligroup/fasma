@@ -99,10 +99,10 @@ def parse_ao_line(current_line, subshell_position):
 
 def get_ao_matrix(basic, file_keyword_trie, file_lines):
     start = file_keyword_trie.find("Eigenvalues")[0] + 1
-    ao_matrix = np.empty((basic.n_mo, 5), dtype='<U12')
+    ao_matrix = np.empty((basic.n_ao, 5), dtype='<U12')
     subshell_position = file_lines[start - 1].rfind('S')
     counter = 0
-    n_lines = basic.n_mo
+    n_lines = basic.n_ao
     if basic.scf_type == "GHF":
         n_lines *= 2
     for current_ao in range(n_lines):
@@ -131,7 +131,7 @@ def get_overlap_matrix(basic, file_keyword_trie, file_lines) -> np.array:
     :return: a numpy array containing the Overlap matrix contained in the given .log file in square matrix form
     """
     overlap_matrix_state_line_num = file_keyword_trie.find("Overlap")[0] + 2
-    triangular_overlap_matrix = parse_matrices.parse_matrix(file_lines, start=overlap_matrix_state_line_num, n_mo=basic.n_basis, triangular=True)
+    triangular_overlap_matrix = parse_matrices.parse_matrix(file_lines, start=overlap_matrix_state_line_num, n_row=basic.n_basis, triangular=True)
     overlap_matrix = matrices.square_trig_matrix(triangular_overlap_matrix)
 
     if basic.scf_type == "GHF":
@@ -144,8 +144,8 @@ def get_ghf_density_matrix(basic, file_keyword_trie, file_lines):
     temp = file_keyword_trie.find("Density matrix (")[0:2]
     real_matrix_start = temp[0] + 2
     imaginary_matrix_start = temp[1] + 2
-    real_matrix = parse_matrices.parse_matrix(file_lines, start=real_matrix_start, n_mo=basic.n_mo, triangular=True)
-    imaginary_matrix = parse_matrices.parse_matrix(file_lines, start=imaginary_matrix_start, n_mo=basic.n_mo, triangular=True)
+    real_matrix = parse_matrices.parse_matrix(file_lines, start=real_matrix_start, n_row=basic.n_ao, triangular=True)
+    imaginary_matrix = parse_matrices.parse_matrix(file_lines, start=imaginary_matrix_start, n_row=basic.n_ao, triangular=True)
     return matrices.combine_complex_matrix(real_matrix, imaginary_matrix)
 
 
@@ -159,7 +159,7 @@ def get_density_matrix(basic, file_keyword_trie, file_lines, cas_status=False, b
     else:
         keyword = "Alpha Density Matrix"
     start = file_keyword_trie.find(keyword)[-1] + 2
-    return parse_matrices.parse_matrix(file_lines, start=start, n_mo=basic.n_mo, last_string="S", space_skip=6, triangular=True)
+    return parse_matrices.parse_matrix(file_lines, start=start, n_row=basic.n_ao, last_string="S", space_skip=6, triangular=True)
 
 
 def get_mo_coefficient_matrix(basic, file_keyword_trie, file_lines, n_col=5, beta=False):

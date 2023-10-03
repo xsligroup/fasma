@@ -28,6 +28,7 @@ def get_basic(file_keyword_trie, file_lines):
     n_mo = n_basis
     if scf_type == "GHF":
         n_mo *= 2
+    n_ao = n_mo
     homo = n_electron
     if scf_type == "ROHF" or scf_type == "RHF":
         homo = homo // 2
@@ -35,7 +36,7 @@ def get_basic(file_keyword_trie, file_lines):
 
     basic_data = basic.BasicData(atom_list=atom_list, scf_type=scf_type, n_basis=n_basis,
                                  n_primitive_gaussian=n_primitive_gaussian, n_alpha_electron=n_alpha_electron,
-                                 n_beta_electron=n_beta_electron, n_electron=n_electron, n_mo=n_mo, homo=homo,
+                                 n_beta_electron=n_beta_electron, n_electron=n_electron, n_mo=n_mo, n_ao=n_ao, homo=homo,
                                  lumo=lumo)
     return basic_data
 

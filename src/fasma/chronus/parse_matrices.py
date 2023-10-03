@@ -22,10 +22,7 @@ def parse_mo_coefficient_matrix(basic, file_lines, start: int, last_string="S", 
 
 def parse_matrix_line(current_line, skip_amount) -> np.array:
     line = current_line[skip_amount:].replace("**********", "   nan").split()
-    try:
-        value_array = np.asarray(line, dtype=float)
-    except ValueError:
-        print(line)
+    value_array = np.asarray(line, dtype=float)
     return value_array
 
 

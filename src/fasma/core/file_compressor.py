@@ -24,9 +24,12 @@ def parse(filename):
     return box_list
 
 
-def parse_chronus(filename, bin_filename):
+def parse_chronus(filename, bin_filename=None):
     key_trie_list, file_lines_list, file_type = fr.read(filename)
-    bin_file = h5py.File(bin_filename, 'r')
+    if bin_filename:
+        bin_file = h5py.File(bin_filename, 'r')
+    else:
+        bin_file=None
     box_list = []
     for current_key_trie, current_file_lines in zip(key_trie_list, file_lines_list):
         current_box = pc.parse(current_key_trie, current_file_lines, bin_file)

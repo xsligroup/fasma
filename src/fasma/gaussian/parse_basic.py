@@ -18,10 +18,11 @@ def get_basic(file_keyword_trie, file_lines):
     n_alpha_electron = temp[2]
     n_beta_electron = temp[3]
     n_electron = n_alpha_electron + n_beta_electron
-    n_mo = n_basis
+    n_ao = n_basis
+    n_mo = get_n_ao(file_keyword_trie, file_lines)
     if scf_type == "GHF":
         n_mo *= 2
-
+        n_ao *= 2
     homo = n_electron
     if scf_type == "ROHF" or scf_type == "RHF":
         homo = homo // 2
@@ -29,9 +30,15 @@ def get_basic(file_keyword_trie, file_lines):
 
     basic_data = basic.BasicData(atom_list=atom_list, scf_type=scf_type, n_basis=n_basis,
                                  n_primitive_gaussian=n_primitive_gaussian, n_alpha_electron=n_alpha_electron,
-                                 n_beta_electron=n_beta_electron, n_electron=n_electron, n_mo=n_mo, homo=homo,
+                                 n_beta_electron=n_beta_electron, n_electron=n_electron, n_mo=n_mo, n_ao=n_ao, homo=homo,
                                  lumo=lumo)
     return basic_data
+
+
+def get_n_ao(file_keyword_trie, file_lines):
+    ao_line = file_lines[file_keyword_trie.find("NBsUse")[0] - 1].split()
+    idx = ao_line.index("NBsUse=")
+    return int(ao_line[idx + 1])
 
 
 def get_atom_list(file_keyword_trie, file_lines) -> list:

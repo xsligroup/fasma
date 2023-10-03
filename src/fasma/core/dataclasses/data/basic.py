@@ -13,6 +13,7 @@ class BasicData:
     n_beta_electron: int
     n_electron: int
     n_mo: int
+    n_ao: int
     homo: int
     lumo: int
 
@@ -26,6 +27,7 @@ class BasicData:
         group.attrs['n_beta_electron'] = self.n_beta_electron
         group.attrs['n_electron'] = self.n_electron
         group.attrs['n_mo'] = self.n_mo
+        group.attrs['n_ao'] = self.n_ao
         group.attrs['homo'] = self.homo
         group.attrs['lumo'] = self.lumo
 
@@ -34,4 +36,4 @@ def hdf5_to_data(group):
     return BasicData(atom_list=list(group['atom_list'].asstr()[:]), scf_type=group.attrs['scf_type'], n_basis=group.attrs['n_basis'],
                      n_primitive_gaussian=group.attrs['n_primitive_gaussian'], n_alpha_electron=group.attrs['n_alpha_electron'],
                      n_beta_electron=group.attrs['n_beta_electron'], n_electron=group.attrs['n_electron'],
-                     n_mo=group.attrs['n_mo'], homo=group.attrs['homo'], lumo=group.attrs['lumo'])
+                     n_mo=group.attrs['n_mo'], n_ao=group.attrs['n_ao'], homo=group.attrs['homo'], lumo=group.attrs['lumo'])

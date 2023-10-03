@@ -13,7 +13,7 @@ def check_cas(basic, file_keyword_trie, file_lines) -> bool:
     :param basic: the BasicData object for this current file
     :return: CASData object if this .log file contains a CAS calculation, none otherwise
     """
-    if file_keyword_trie.find("MCSCF") is not None or int(file_lines[file_keyword_trie.find("OSCISTREN")[0] - 1].split()[2]) >= 1:
+    if file_keyword_trie.find("MCSCF") is not None and int(file_lines[file_keyword_trie.find("OSCISTREN")[0] - 1].split()[2]) >= 1:
         n_active_space_electron =  int(file_lines[file_keyword_trie.find("NACTE")[0] - 1].split()[2])
         n_active_space_mo = int(file_lines[file_keyword_trie.find("NACTO")[0] - 1].split()[2])
         n_root = int(file_lines[file_keyword_trie.find("NROOTS")[0] - 1].split()[2])
@@ -38,22 +38,30 @@ def get_excitations_cas(file_keyword_trie, file_lines, excitation_data):
     ground_state_list, excited_state_list, delta_energy_list, oscillations, delta_diagonal_list = parse_excitation.initialize_excitation_fields(
         excitation_data.n_excitation)
     num_of_results = 0
-    diag_lines, excitation_lines = verify_cas_completeness(file_keyword_trie, excitation_data.methodology_data.n_root,
+    diag_lines, excitation_lines, diag_n_lines = verify_cas_completeness(file_keyword_trie, excitation_data.methodology_data.n_root,
                                                                   excitation_data.methodology_data.n_excitation_full)
+    state_diag_matrix = get_state_diag_matrix(file_lines, diag_lines, excitation_data.n_active_space_mo,
+                                              diag_n_lines)
     for x in range(excitation_data.n_ground_state):
         current_degenerate_state = x + 1
-        current_degenerate_diag = dm_get_diag(file_lines, diag_lines[x], excitation_data.n_active_space_mo)
+        current_degenerate_diag = state_diag_matrix[x]
         for y in range(excitation_data.final_state - 1 - x):
             current_excited_state = x + y + 2
             ground_state_list[num_of_results] = current_degenerate_state
             excited_state_list[num_of_results] = current_excited_state
             delta_diagonal_list[num_of_results], delta_energy_list[num_of_results], oscillations[
                 num_of_results] = cas_get_excited_state(file_lines, current_degenerate_diag,
-                                                        diag_lines[current_excited_state - 1],
-                                                        excitation_lines[num_of_results],
-                                                        excitation_data.n_active_space_mo)
+                                                        state_diag_matrix[current_excited_state - 1],
+                                                        excitation_lines[num_of_results])
             num_of_results += 1
     return ground_state_list, excited_state_list, delta_energy_list, oscillations, delta_diagonal_list
+
+
+def get_state_diag_matrix(file_lines, diag_lines, n_active_space_mo, diag_n_lines):
+    state_diag_matrix = np.zeros((len(diag_lines), n_active_space_mo), dtype=float)
+    for x in range(len(diag_lines)):
+        state_diag_matrix[x, :] = dm_get_diag(file_lines, diag_lines[x], n_active_space_mo, diag_n_lines)
+    return state_diag_matrix
 
 
 def verify_cas_completeness(file_keyword_trie, n_root, n_excitation):
@@ -68,11 +76,11 @@ def verify_cas_completeness(file_keyword_trie, n_root, n_excitation):
     excitation_lines = file_keyword_trie.find("E(Eh)")
     if len(excitation_lines) != n_excitation:
         raise ValueError(str(n_excitation) + " excitations" + msg.gaussian_missing_msg())
-    return diag_lines, excitation_lines
+    return diag_lines, excitation_lines, diag_n_lines
 
 
-def cas_get_excited_state(file_lines, ground_diag, diag_line_num, excitation_line_num, n_active_space_mo):
-    delta_diagonal = dm_get_diag(file_lines, diag_line_num, n_active_space_mo) - ground_diag
+def cas_get_excited_state(file_lines, ground_diag, excited_diag, excitation_line_num):
+    delta_diagonal = excited_diag - ground_diag
     energy_value, osc_value = dm_get_excitation(file_lines, excitation_line_num)
     return delta_diagonal, energy_value, osc_value
 
@@ -82,11 +90,17 @@ def dm_get_excitation(file_lines, line_num):
     return (float(current_line[8]) * 27.2114), float(current_line[11])
 
 
-def dm_get_diag(file_lines, line_num, n_active_space_mo):
+def dm_get_diag(file_lines, line_num, n_active_space_mo, diag_n_lines):
     diag = np.zeros(n_active_space_mo, dtype=float)
     counter = 0
-    while file_lines[line_num - 1].strip():
-        stripped_line = file_lines[line_num - 1].replace("(", " ").replace(")", "").split()[3::2]
+    for x in range(diag_n_lines):
+        stripped_line = file_lines[line_num - 1].replace("(", " ").replace(")", "").split()
+        if "State" in stripped_line:
+            start = 3
+        else:
+            start = 1
+        stripped_line = stripped_line[start::2]
         diag[counter: counter + len(stripped_line)] = np.asarray(stripped_line, dtype=float)
         counter += len(stripped_line)
+        line_num += 1
     return diag
