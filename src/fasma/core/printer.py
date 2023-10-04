@@ -16,7 +16,7 @@ def print_mo_analysis(filename, box, dataframe):
         header = "NUM_OF_BASIS={}, NUM_OF_ALPHA_ELECTRONS={}, NUM_OF_BETA_ELECTRONS={}".format(box.basic_data.n_basis, box.basic_data.n_alpha_electron, box.basic_data.n_beta_electron)
         print(header, file=external_file)
         mo_str = ""
-        mo_str += "\n>> MO {:<5} :  {:>8.4f};    Energy: {: f} eV"
+        mo_str += "\n\n>> MO {:<5} :  {:>8.4f};    Energy: {: f} eV"
         current_atom = None
         for x in range(2, len(index_list)):
             if current_atom is None or current_atom != index_list[x][1]:

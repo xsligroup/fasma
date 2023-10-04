@@ -24,8 +24,12 @@ def filter_mo_analysis(dataframe: pd.DataFrame, index: list = [], mo_list=None, 
     return dataframe
 
 def mo_analysis_transpose(dataframe):
-    df = pd.concat([filter_mo_analysis(dataframe, ["Atom Type"]), filter_mo_analysis(dataframe, ["Atom Type", "Angular Momentum"]).reset_index(level="Angular Momentum").iloc[2:]], axis = 0).reset_index(level="Atom Type")
-    df = df.assign(teamgroup=pd.factorize(df['Atom Type'])[0]).sort_values(['teamgroup']).drop(columns='teamgroup')
+    df = pd.concat([filter_mo_analysis(dataframe, ["Atom Type"]),
+                    filter_mo_analysis(dataframe, ["Atom Type", "Angular Momentum"]).reset_index(
+                        level="Angular Momentum").iloc[2:]], axis=0).reset_index(level="Atom Type")
+    df['ml'] = df['Angular Momentum'].map({'S': 0, 'P': 1, 'D': 2, 'F': 3, 'G': 4, 'H': 5, 'I': 6})
+    df = df.assign(group=pd.factorize(df['Atom Type'])[0]).sort_values(['group', 'ml'], na_position='first').drop(
+        columns=['group', 'ml'])
     df['Angular Momentum'] = df['Angular Momentum'].fillna(value="")
     df.set_index(['Atom Type', 'Angular Momentum'], append=True, inplace=True)
     return df.transpose()

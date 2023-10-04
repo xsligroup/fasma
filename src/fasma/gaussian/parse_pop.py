@@ -75,7 +75,7 @@ def get_eigenvalues(file_keyword_trie, file_lines, n_mo, n_col=5, beta=False):
         line_values = parse_matrices.parse_matrix_line(line, skip_amount)
         eigenvalues[(n_col * current_block): (n_col * current_block) + n_col_block] = line_values
 
-    return eigenvalues
+    return eigenvalues * 27.2114
 
 
 def parse_ao_line(current_line, subshell_position):

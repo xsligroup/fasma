@@ -158,4 +158,4 @@ def get_eigenvalues(basic, file_keyword_trie, file_lines, n_mo, n_col=4, neo_sta
         line_values = parse_matrices.parse_matrix_line(line, skip_amount)
         eigenvalues[(n_col * current_block): (n_col * current_block) + n_col_block] = line_values
 
-    return eigenvalues
+    return eigenvalues * 27.2114
