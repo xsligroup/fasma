@@ -2,6 +2,7 @@ from fasma.core.dataclasses.data import pop, electron
 from fasma.core import messages as msg
 from fasma.gaussian import parse_functions
 from fasma.gaussian import parse_matrices
+from fasma.core import conversion
 from fasma.core import matrices
 import numpy as np
 import math as m
@@ -75,7 +76,7 @@ def get_eigenvalues(file_keyword_trie, file_lines, n_mo, n_col=5, beta=False):
         line_values = parse_matrices.parse_matrix_line(line, skip_amount)
         eigenvalues[(n_col * current_block): (n_col * current_block) + n_col_block] = line_values
 
-    return eigenvalues * 27.2114
+    return eigenvalues * conversion.EV
 
 
 def parse_ao_line(current_line, subshell_position):

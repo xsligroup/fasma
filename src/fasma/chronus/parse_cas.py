@@ -1,6 +1,7 @@
 from fasma.core.dataclasses.data import methodology, excitation
 from fasma.core import messages as msg
 from fasma.core import parse_excitation
+from fasma.core import conversion
 import numpy as np
 
 
@@ -87,7 +88,7 @@ def cas_get_excited_state(file_lines, ground_diag, excited_diag, excitation_line
 
 def dm_get_excitation(file_lines, line_num):
     current_line = file_lines[line_num - 1].split()
-    return (float(current_line[8]) * 27.2114), float(current_line[11])
+    return (float(current_line[8]) * conversion.EV), float(current_line[11])
 
 
 def dm_get_diag(file_lines, line_num, n_active_space_mo, diag_n_lines):

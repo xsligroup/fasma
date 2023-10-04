@@ -1,6 +1,7 @@
 from fasma.core.dataclasses.data import methodology, excitation
 from fasma.core import messages as msg
 from fasma.core import parse_excitation
+from fasma.core import conversion
 from fasma.gaussian import parse_functions
 from fasma.gaussian import parse_matrices
 import numpy as np
@@ -128,7 +129,7 @@ def find_switched_orbitals(file_keyword_trie, file_lines) -> np.array:
 
 def dm_get_hartree(file_lines, line_num):
     current_line = file_lines[line_num - 1].split()
-    return float(current_line[4]) * 27.2114
+    return float(current_line[4]) * conversion.EV
 
 
 def dm_get_diag(file_lines, line_num, n_active_space_mo):

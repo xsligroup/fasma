@@ -1,5 +1,6 @@
 from matplotlib.collections import PolyCollection
 from fasma.core.dataclasses import spectrum as sp
+from fasma.core import conversion
 from multiprocessing import Pool
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
@@ -52,14 +53,14 @@ def scale_spectra(energy_unit, spectra, xshift, yscale, rscale):
     freq = spectra.freq
     spect = spectra.spect
     if energy_unit.lower() == "nm":
-        x = np.divide(1239.842 * np.ones(x.shape), x)
-        freq = np.divide(1239.842 * np.ones(freq.shape), freq)
+        x = np.divide(conversion.NM * np.ones(x.shape), x)
+        freq = np.divide(conversion.NM * np.ones(freq.shape), freq)
     elif energy_unit.lower() == "wn":
-        x = np.multiply(8100 * np.ones(x.shape), x)
-        freq = np.multiply(8100 * np.ones(freq.shape), freq)
+        x = np.multiply(conversion.WN * np.ones(x.shape), x)
+        freq = np.multiply(conversion.WN * np.ones(freq.shape), freq)
     elif energy_unit.lower() == "eh":
-        x = np.multiply(8100 * np.ones(x.shape), x)
-        freq = np.divide(freq, 27.2114 * np.ones(freq.shape))
+        x = np.divide(x, conversion.EV * np.ones(x.shape))
+        freq = np.divide(freq, conversion.EV * np.ones(freq.shape))
 
     x += xshift
     freq += xshift
