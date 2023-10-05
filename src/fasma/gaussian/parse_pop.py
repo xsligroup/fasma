@@ -46,8 +46,8 @@ def get_beta_electron_data(basic, file_keyword_trie, file_lines, cas_status):
     if basic.scf_type == "UHF":
         mo_coefficient_matrix = get_mo_coefficient_matrix(basic=basic, file_keyword_trie=file_keyword_trie, file_lines=file_lines, beta=True)
         eigenvalues = get_eigenvalues(file_keyword_trie=file_keyword_trie, file_lines=file_lines, n_mo=basic.n_mo, beta=True)
-    beta_electron_data.add_beta_mo_coefficient_matrix(mo_coefficient_matrix)
-    beta_electron_data.add_beta_eigenvalues(eigenvalues)
+        beta_electron_data.add_beta_mo_coefficient_matrix(mo_coefficient_matrix)
+        beta_electron_data.add_beta_eigenvalues(eigenvalues)
     return beta_electron_data
 
 
