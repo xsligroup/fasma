@@ -22,6 +22,12 @@ def check_td(basic, file_keyword_trie, file_lines) -> bool:
     else:
         if temp_check[0] == 1:
             n_excited_state = temp_check[1]
+            try:
+                excited_check = parse_functions.find_iop(file_keyword_trie, file_lines, "9", ["48"])
+                if excited_check[0] in [2, 4]:
+                    n_excited_state *= 2
+            except ValueError:
+                pass
             n_active_space_mo = basic.n_mo
             n_active_space_electron = basic.n_electron
 
@@ -72,10 +78,10 @@ def get_excitations_td(basic, file_keyword_trie, file_lines, excitation_data):
 
 def verify_td_completeness(file_keyword_trie, n_excitation):
     state_lines = file_keyword_trie.find("Excited State")
-    if len(state_lines) != n_excitation:
+    if len(state_lines) < n_excitation:
         raise ValueError(
             str(n_excitation) + " excited states" + msg.gaussian_missing_msg())
-    return state_lines
+    return state_lines[:n_excitation]
 
 
 def td_get_excited_state(basic, file_lines, line_num, n_active_space_mo):
