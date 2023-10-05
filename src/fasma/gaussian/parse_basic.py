@@ -80,13 +80,17 @@ def find_scf_type(file_keyword_trie, file_lines) -> str:
     except ValueError:
         return "RHF"
     if retrieval == -2:
-        line_num = file_keyword_trie.find("SCF Done")[0]
-        line = file_lines[line_num - 1]
-        type_indicator = line.split()[2][2]
-        if type_indicator == "R" and line.split()[2][3] == "O":
-            type_indicator = "RO"
-        type_dict = {"R": 1, "RO": 101, "U": 2, "G": 7}
+        line_num = file_keyword_trie.find("Copying SCF densities")[0]
+        line = file_lines[line_num - 1].split()
+        type_indicator = int(line[line.index("IOpCl=") + 1])
+        type_dict = {0: "R", 1: 2, 2: "R", 3: 2, 6: 7}
         retrieval = type_dict.get(type_indicator)
+        if retrieval == "R":
+            type_indicator = int(line[-1][-2])
+            if type_indicator == 1:
+                retrieval = 101
+            else:
+                retrieval = 1
     key_dict = {1: "RHF", 101: "ROHF", 2: "UHF", 7: "GHF"}
     return key_dict.get(retrieval)
 
