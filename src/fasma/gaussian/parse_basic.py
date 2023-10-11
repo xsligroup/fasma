@@ -36,7 +36,10 @@ def get_basic(file_keyword_trie, file_lines):
 
 
 def get_n_ao(file_keyword_trie, file_lines):
-    ao_line = file_lines[file_keyword_trie.find("NBsUse")[0] - 1].split()
+    count = 0
+    while "RelInt: Using uncontracted basis" in file_lines[file_keyword_trie.find("NBsUse")[count] - 1]:
+        count += 1
+    ao_line = file_lines[file_keyword_trie.find("NBsUse")[count] - 1].split()
     idx = ao_line.index("NBsUse=")
     return int(ao_line[idx + 1])
 
