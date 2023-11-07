@@ -19,7 +19,7 @@ def get_basic(file_keyword_trie, file_lines):
     n_beta_electron = temp[3]
     n_electron = n_alpha_electron + n_beta_electron
     n_ao = n_basis
-    n_mo = get_n_ao(file_keyword_trie, file_lines)
+    n_mo = get_n_mo(file_keyword_trie, file_lines)
     if scf_type == "GHF":
         n_mo *= 2
         n_ao *= 2
@@ -35,13 +35,10 @@ def get_basic(file_keyword_trie, file_lines):
     return basic_data
 
 
-def get_n_ao(file_keyword_trie, file_lines):
-    count = 0
-    while "RelInt: Using uncontracted basis" in file_lines[file_keyword_trie.find("NBsUse")[count] - 1]:
-        count += 1
-    ao_line = file_lines[file_keyword_trie.find("NBsUse")[count] - 1].split()
-    idx = ao_line.index("NBsUse=")
-    return int(ao_line[idx + 1])
+def get_n_mo(file_keyword_trie, file_lines):
+    mo_line = file_lines[file_keyword_trie.find("NBsUse")[-1] - 1].split()
+    idx = mo_line.index("NBsUse=")
+    return int(mo_line[idx + 1])
 
 
 def get_atom_list(file_keyword_trie, file_lines) -> list:
