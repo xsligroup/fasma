@@ -39,9 +39,14 @@ def check_td(basic, file_keyword_trie, file_lines) -> bool:
                                                                                               delta_energy_list,
                                                                                               oscillations,
                                                                                               alpha_delta_diagonal_list)
-            rotatory_velocity, rotatory_length = get_rotatory_strength(file_keyword_trie, file_lines, n_excited_state)
-            excitation_matrix = np.insert(excitation_matrix, 4, rotatory_velocity, axis=1)
-            excitation_matrix = np.insert(excitation_matrix, 5, rotatory_length, axis=1)
+            try:
+                excited_check = parse_functions.find_iop(file_keyword_trie, file_lines, "3", ["91"])
+                if excited_check[0] == 7:
+                    pass
+            except IndexError:
+                rotatory_velocity, rotatory_length = get_rotatory_strength(file_keyword_trie, file_lines, n_excited_state)
+                excitation_matrix = np.insert(excitation_matrix, 4, rotatory_velocity, axis=1)
+                excitation_matrix = np.insert(excitation_matrix, 5, rotatory_length, axis=1)
             excitation_data.add_excitation_matrix(excitation_matrix)
             excitation_data.add_delta_diagonal_matrix(delta_diagonal_matrix)
             if basic.scf_type == "UHF":
