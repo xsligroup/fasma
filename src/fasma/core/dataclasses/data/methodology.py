@@ -7,6 +7,11 @@ import numpy as np
 class MethodologyData(ABC):
     "Methodology Data"
 
+@dataclass
+class TDSOCentricData(MethodologyData):
+    n_so_excitation: int
+    so_excitation_matrix: Optional[np.ndarray] = None
+
 
 @dataclass
 class CASCentricData(MethodologyData):

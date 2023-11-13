@@ -4,6 +4,12 @@ import numpy as np
 import warnings
 
 
+def generate_transition_analysis(excitation_matrix):
+    df = get_excitations_dataframe(excitation_matrix)
+    df.set_index(['Starting State', 'Ending State'], inplace=True)
+    return df
+
+
 def get_plotting_dataframe(dataframe, root="oscillator strength", state_breakdown=False, mo_breakdown=False):
     dataframe = dataframe[dataframe[root] != 0]
     index_list = dataframe.index.names.copy()

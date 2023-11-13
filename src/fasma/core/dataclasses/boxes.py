@@ -63,6 +63,7 @@ class Box:
         df.set_index(['Starting State', 'Ending State'], inplace=True)
         return df
 
+
     def generate_merged_mo_transition_analysis(self, zero_index=False):
         if self.spectra_data is None:
             raise ValueError(

@@ -52,8 +52,9 @@ def check_td(basic, file_keyword_trie, file_lines) -> bool:
 
 
 def get_excitations_td(basic, file_keyword_trie, file_lines, excitation_data):
-    ground_state_list, excited_state_list, delta_energy_list, oscillations, alpha_delta_diagonal_list = parse_excitation.initialize_excitation_fields(
+    ground_state_list, excited_state_list, delta_energy_list, oscillations = parse_excitation.initialize_excitation_fields(
         excitation_data.n_excitation)
+    alpha_delta_diagonal_list = np.empty(excitation_data.n_excitation, dtype=np.ndarray)
     beta_delta_diagonal_list = np.empty(excitation_data.n_excitation, dtype=np.ndarray)
     num_of_results = 0
     state_lines = verify_td_completeness(file_keyword_trie, excitation_data.n_excitation)

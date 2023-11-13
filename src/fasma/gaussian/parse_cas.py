@@ -59,8 +59,9 @@ def check_cas(basic, file_keyword_trie, file_lines) -> bool:
 
 
 def get_excitations_cas(file_keyword_trie, file_lines, excitation_data):
-    ground_state_list, excited_state_list, delta_energy_list, oscillations, delta_diagonal_list = parse_excitation.initialize_excitation_fields(
+    ground_state_list, excited_state_list, delta_energy_list, oscillations = parse_excitation.initialize_excitation_fields(
         excitation_data.n_excitation)
+    delta_diagonal_list = np.empty(excitation_data.n_excitation, dtype=np.ndarray)
     num_of_results = 0
     diag_lines, energy_lines, osc_lines = verify_cas_completeness(file_keyword_trie, excitation_data.methodology_data.n_root,
                                                                   excitation_data.methodology_data.n_excitation_full)

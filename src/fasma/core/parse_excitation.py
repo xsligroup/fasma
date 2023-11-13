@@ -6,8 +6,7 @@ def initialize_excitation_fields(n_excitation):
     excited_state_list = np.zeros(n_excitation, dtype=int)
     delta_energy_list = np.zeros(n_excitation)
     oscillations = np.zeros(n_excitation)
-    delta_diagonal_list = np.empty(n_excitation, dtype=np.ndarray)
-    return ground_state_list, excited_state_list, delta_energy_list, oscillations, delta_diagonal_list
+    return ground_state_list, excited_state_list, delta_energy_list, oscillations
 
 
 def get_excitation_matrix(excitation_func) -> np.array:
@@ -19,7 +18,7 @@ def get_excitation_matrix(excitation_func) -> np.array:
     ground_state_list, excited_state_list, delta_energy_list, oscillations, delta_diagonal_list = excitation_func
     return get_excitation_matrix(ground_state_list, excited_state_list, delta_energy_list, oscillations, delta_diagonal_list)
 
-
+# Split this function in the future
 def get_excitation_matrix(ground_state_list, excited_state_list, delta_energy_list, oscillations, delta_diagonal_list) -> np.array:
     """
     Returns a numpy matrix containing the oscillation strength of every excited state from each ground state.

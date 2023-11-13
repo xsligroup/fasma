@@ -18,7 +18,7 @@ class ExcitationData(spectra.SpectraData):
     beta_delta_diagonal_matrix: Optional[np.ndarray] = None
     excitation_matrix: Optional[np.ndarray] = None
     methodology_data: Optional[methodology.MethodologyData] = None
-    methodology: Optional[str] = None
+    method: Optional[str] = None
 
     def initialize_active_space(self):
         self.active_space_end = self.active_space_start + self.n_active_space_mo
@@ -35,6 +35,10 @@ class ExcitationData(spectra.SpectraData):
         if self.beta_delta_diagonal_matrix is None:
             self.beta_delta_diagonal_matrix = data
 
+    def add_methodology_data(self, data: methodology.MethodologyData):
+        if self.methodology_data is None:
+            self.methodology_data = data
+
     def data_to_hdf5(self, file):
         group = file.create_group("spectra_data")
         group.attrs['n_ground_state'] = self.n_ground_state
@@ -45,7 +49,7 @@ class ExcitationData(spectra.SpectraData):
         group.attrs['n_active_space_electron'] = self.n_active_space_electron
         group.attrs['active_space_start'] = self.active_space_start
         group.attrs['active_space_end'] = self.active_space_end
-        group.attrs['methodology'] = self.methodology
+        group.attrs['method'] = self.method
         if self.delta_diagonal_matrix is not None:
             group.create_dataset("delta_diagonal_matrix", data=self.delta_diagonal_matrix)
         if self.beta_delta_diagonal_matrix is not None:
@@ -70,7 +74,7 @@ class TDData(ExcitationData):
         self.n_excitation = self.n_excited_state
         self.active_space_start = 0
         self.initialize_active_space()
-        self.methodology = "TD"
+        self.method = "TD"
 
 
 @dataclass
@@ -83,20 +87,20 @@ class CASData(ExcitationData):
         self.n_excited_state = self.methodology_data.n_root - self.n_ground_state
         self.n_excitation = int((self.final_state * self.n_ground_state) - (self.n_ground_state * (self.n_ground_state + 1) / 2))
         self.initialize_active_space()
-        self.methodology = "CAS"
+        self.method = "CAS"
 
 
 def hdf5_to_data(group):
     key_list = list(group.keys())
-    group_methodology = group.attrs["methodology"]
-    if group_methodology == "CAS":
+    group_method = group.attrs["method"]
+    if group_method == "CAS":
         methodology_data = methodology.hdf5_to_data(group["methodology_data"])
         excitation_data = CASData(n_ground_state=group.attrs['n_ground_state'], final_state=group.attrs['final_state'],
                                   n_active_space_mo=group.attrs['n_active_space_mo'],
                                   n_active_space_electron=group.attrs['n_active_space_electron'],
                                   active_space_start=group.attrs['active_space_start'],
                                   methodology_data=methodology_data)
-    elif group_methodology == "TD":
+    elif group_method == "TD":
         excitation_data = TDData(n_excited_state=group.attrs['n_excited_state'],
                                  n_active_space_mo=group.attrs['n_active_space_mo'],
                                  n_active_space_electron=group.attrs['n_active_space_electron'])

@@ -1,4 +1,4 @@
-from fasma.core.dataclasses.data import excitation
+from fasma.core.dataclasses.data import excitation, methodology
 from fasma.core import messages as msg
 from fasma.core import parse_excitation
 from fasma.gaussian import parse_functions
@@ -39,14 +39,21 @@ def check_td(basic, file_keyword_trie, file_lines) -> bool:
                                                                                               delta_energy_list,
                                                                                               oscillations,
                                                                                               alpha_delta_diagonal_list)
-            try:
-                excited_check = parse_functions.find_iop(file_keyword_trie, file_lines, "3", ["91"])
-                if excited_check[0] == 7:
-                    pass
-            except IndexError:
-                rotatory_velocity, rotatory_length = get_rotatory_strength(file_keyword_trie, file_lines, n_excited_state)
+            rotatory_lines = file_keyword_trie.find("Rotatory Strength")
+            if rotatory_lines is not None:
+                # Correct check would be to check for g in front of functional for x2c-tddft)
+                # Simpler solution to only check for rotary strength keyword (not in line with other style searches
+                rotatory_velocity, rotatory_length = get_rotatory_strength(rotatory_lines, file_lines, n_excited_state)
                 excitation_matrix = np.insert(excitation_matrix, 4, rotatory_velocity, axis=1)
                 excitation_matrix = np.insert(excitation_matrix, 5, rotatory_length, axis=1)
+            try:
+                so_check = parse_functions.find_iop(file_keyword_trie, file_lines, "9", ["160"])
+                if so_check[0] in [1, 2]:
+                    n_so_excited_state = n_excited_state * 2
+                    so_data = get_excitations_so(file_keyword_trie, file_lines, n_so_excited_state)
+                    excitation_data.add_methodology_data(so_data)
+            except ValueError:
+                pass
             excitation_data.add_excitation_matrix(excitation_matrix)
             excitation_data.add_delta_diagonal_matrix(delta_diagonal_matrix)
             if basic.scf_type == "UHF":
@@ -55,16 +62,37 @@ def check_td(basic, file_keyword_trie, file_lines) -> bool:
             return excitation_data
 
 
-def get_rotatory_strength(file_keyword_trie, file_lines, n_excited_state):
-    rotatory_lines = file_keyword_trie.find("Rotatory Strength")
+def get_rotatory_strength(rotatory_lines, file_lines, n_excited_state):
     rotatory_velocity = parse_matrices.parse_matrix_block(file_lines, rotatory_lines[0] + 2, n_excited_state, 6, 10)[:, 4]
     rotatory_length = parse_matrices.parse_matrix_block(file_lines, rotatory_lines[1] + 2, n_excited_state, 6, 10)[:, 4]
     return rotatory_velocity, rotatory_length
 
 
+def get_excitations_so(file_keyword_trie, file_lines, n_so_excited_state):
+    soc_lines = file_keyword_trie.find("SOC State:")
+    if len(soc_lines) < n_so_excited_state + 1:
+        raise ValueError(str(n_so_excited_state + 1) + " SOC states" + msg.gaussian_missing_msg())
+    ground_state_list, excited_state_list, delta_energy_list, oscillations = parse_excitation.initialize_excitation_fields(n_so_excited_state)
+    ground_state_energy = 0
+    ground_state_list += 1
+    for current_state in range(n_so_excited_state + 1):
+        current_line = file_lines[soc_lines[current_state] - 1].split()
+        current_energy = float(current_line[5])
+        if current_state == 0:
+            ground_state_energy = current_energy
+        else:
+            excited_state_list[current_state - 1] = current_state + 1
+            delta_energy_list[current_state - 1] = current_energy - ground_state_energy
+            oscillations[current_state - 1] = float(current_line[9])
+    excitation_matrix = np.column_stack((ground_state_list, excited_state_list, delta_energy_list, oscillations))
+    methodology_data = methodology.TDSOCentricData(n_so_excitation=n_so_excited_state, so_excitation_matrix=excitation_matrix)
+    return methodology_data
+
+
 def get_excitations_td(basic, file_keyword_trie, file_lines, excitation_data):
-    ground_state_list, excited_state_list, delta_energy_list, oscillations, alpha_delta_diagonal_list = parse_excitation.initialize_excitation_fields(
+    ground_state_list, excited_state_list, delta_energy_list, oscillations = parse_excitation.initialize_excitation_fields(
         excitation_data.n_excitation)
+    alpha_delta_diagonal_list = np.empty(excitation_data.n_excitation, dtype=np.ndarray)
     beta_delta_diagonal_list = np.empty(excitation_data.n_excitation, dtype=np.ndarray)
     num_of_results = 0
     state_lines = verify_td_completeness(file_keyword_trie, excitation_data.n_excitation)
