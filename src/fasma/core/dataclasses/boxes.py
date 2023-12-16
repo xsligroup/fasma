@@ -111,7 +111,7 @@ class Box:
         else:
             ao_projection_matrix = np.copy(self.pop_data.electron_data.ao_projection_matrix).real
             delta_diagonal_matrix = self.spectra_data.delta_diagonal_matrix
-        if self.spectra_data.methodology == "CAS" and self.spectra_data.methodology_data.switched_orbitals is not None and swap_orbitals:
+        if self.spectra_data.method == "CAS" and self.spectra_data.methodology_data.switched_orbitals is not None and swap_orbitals:
             ao_projection_matrix = matrices.swap_ao_projection_orbitals(ao_projection_matrix, self.spectra_data.methodology_data.switched_orbitals)
         ao_projection_matrix = ao_projection_matrix[:, self.spectra_data.active_space_start: self.spectra_data.active_space_end]
         ao_projection_matrix = matrices.convert_ao_projection_to_mo_transition(self.spectra_data.n_excitation, ao_projection_matrix)

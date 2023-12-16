@@ -41,19 +41,17 @@ class KeywordTrie:
         """
         key = key
         temp_string = key.split()
-        intersection_set = None
-
-        for current_word in temp_string:
+        intersection_set = self.find_helper(temp_string[0])
+        if not intersection_set:
+            return None
+        for current_word in temp_string[1:]:
             current_set = self.find_helper(current_word)
-
             if not current_set:
                 return None
-
-            if not intersection_set:
-                intersection_set = current_set
             else:
                 intersection_set = intersection_set & current_set
-
+            if not intersection_set:
+                return None
         return sorted(intersection_set)
 
     def find_helper(self, keyword: str):

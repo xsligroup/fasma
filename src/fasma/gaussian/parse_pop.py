@@ -15,6 +15,7 @@ def check_pop(basic, file_keyword_trie, file_lines, cas_status: bool) -> bool:
     :return: true if this .log contains a population calculation, false otherwise
     """
     try:
+        # Change To Overlap Matrix Missing Msg
         temp_check = parse_functions.find_iop(file_keyword_trie, file_lines, "3", ["33"])
     except IndexError:
         pass
@@ -159,7 +160,10 @@ def get_density_matrix(basic, file_keyword_trie, file_lines, cas_status=False, b
         keyword = "Density Matrix"
     else:
         keyword = "Alpha Density Matrix"
-    start = file_keyword_trie.find(keyword)[-1] + 2
+    search = file_keyword_trie.find(keyword)
+    if not search:
+        return None
+    start = search[-1] + 2
     return parse_matrices.parse_matrix(file_lines, start=start, n_row=basic.n_ao, last_string="S", space_skip=6, triangular=True)
 
 

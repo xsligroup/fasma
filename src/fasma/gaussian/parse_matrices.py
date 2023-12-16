@@ -43,7 +43,12 @@ def parse_matrix_block(file_lines, start, n_row, n_col, skip_amount):
     for current_row in range(n_row):  # Number of rows
         line = file_lines[start - 1 + current_row]
         line_values = parse_matrix_line(line, skip_amount)
-        block_matrix[current_row, : len(line_values)] = line_values
+        try:
+            block_matrix[current_row, : len(line_values)] = line_values
+        except ValueError:
+            print(line)
+            print(line_values)
+            print(start - 1 + current_row)
     return block_matrix
 
 

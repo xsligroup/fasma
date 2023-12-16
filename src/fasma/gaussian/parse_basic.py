@@ -79,7 +79,7 @@ def find_scf_type(file_keyword_trie, file_lines) -> str:
         retrieval = parse_functions.find_iop(file_keyword_trie, file_lines, "3", ["116"])[0]
     except ValueError:
         return "RHF"
-    if retrieval == -2:
+    if retrieval not in [1, 101, 2, 7]:
         line_num = file_keyword_trie.find("Copying SCF densities")[0]
         line = file_lines[line_num - 1].split()
         type_indicator = int(line[line.index("IOpCl=") + 1])
